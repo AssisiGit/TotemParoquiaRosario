@@ -1,4 +1,5 @@
 // app/page.tsx
+import { Suspense } from 'react';
 import { client } from '../sanity/lib/client'; 
 import TotemClient from './TotemClient';
 
@@ -28,5 +29,9 @@ export default async function Page() {
   const menuItens = await getMenuTotem();
   
   // Envia a lista para a tela do Totem renderizar
-  return <TotemClient menuItens={menuItens} />;
+  return (
+<Suspense fallback={<div className="w-full h-screen bg-[#FDFBF7] flex items-center justify-center text-[#8B1E31] text-2xl">Carregando Totem...</div>}>
+      <TotemClient menuItens={menuItens} />
+    </Suspense>
+  );
 }
