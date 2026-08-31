@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -23,4 +27,18 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  
+  /* =========================================
+     TRAVAS DE SEGURANÇA PARA O TOTEM TOUCH
+  ========================================= */
+  
+  /* Impede que o usuário selecione os textos e a tela fique azul */
+  user-select: none;
+  -webkit-user-select: none;
+  
+  /* Permite rolar a tela, mas bloqueia o movimento de pinça (zoom) */
+  touch-action: pan-y; 
+  
+  /* Remove aquele piscar azul no mobile quando clica num botão */
+  -webkit-tap-highlight-color: transparent;
 }
