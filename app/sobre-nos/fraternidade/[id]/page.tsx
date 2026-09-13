@@ -1,6 +1,7 @@
 // app/sobre-nos/fraternidade/[id]/page.tsx
 import { client } from '@/sanity/lib/client';
 import Link from 'next/link';
+import { NavVoltarInicio } from '../../_components/NavVoltarInicio';
 
 export const revalidate = 60;
 
@@ -16,7 +17,7 @@ async function getFradeDetalhes(id: string) {
     descricao,
     "fotoUrl": foto.asset->url
   }`;
-  
+
   try {
     return await client.fetch(query, { cleanId });
   } catch (error) {
@@ -39,7 +40,7 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
 
   if (!frade) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-6 text-center select-none">
+      <div className="min-h-screen bg-[#F8F5EB] flex flex-col items-center justify-center p-6 text-center select-none">
         <h1 className="text-3xl font-serif font-bold text-[#8B1E31] mb-4">Frade não encontrado.</h1>
         <p className="text-gray-600 mb-8 max-w-md">
           Não conseguimos carregar os dados deste frade. Verifique se ele está publicado corretamente no painel do Sanity.
@@ -52,75 +53,94 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] relative select-none overflow-hidden pb-12 flex flex-col items-center">
-      
-      {/* =========================================
-          CABEÇALHO BORDA ARREDONDADA (FUNDO VINHO)
-      ========================================= */}
-      <div className="relative w-full h-[40vh] sm:h-[45vh] bg-[#8B1E31] rounded-b-[3.5rem] sm:rounded-b-[4.5rem] overflow-hidden shadow-xl flex justify-center items-end">
-        
-        <div className="absolute inset-0 opacity-10 bg-[url('/fundo-marca-dagua.png')] bg-cover bg-center"></div>
+    <div className="min-h-screen bg-[#F8F5EB] relative select-none overflow-hidden flex flex-col items-center">
 
-        {/* Foto do Frade Recortada em Arco */}
-        <div className="relative w-48 h-60 sm:w-56 sm:h-72 rounded-t-full overflow-hidden border-4 border-[#C79C45] bg-[#4A3022] shadow-2xl z-10 -mb-1">
+      {/* =========================================
+          CABEÇALHO — degradê vinho com "sunburst" decorativo (asset real,
+          public/fraternidade) e a foto do frade
+      ========================================= */}
+      <div
+        className="relative w-full h-[38vh] flex-shrink-0 overflow-hidden flex justify-center"
+        style={{
+          borderRadius: '0 0 clamp(1.6rem, 6vw, 4.2rem) clamp(1.6rem, 6vw, 4.2rem)',
+          background: 'linear-gradient(120deg, #D7355A 0%, #8E1D38 55%, #7A1B37 100%)',
+        }}
+      >
+        {/* Raios decorativos nas laterais (asset real, espelhado do lado direito) */}
+        <img
+          src="/fraternidade/forma%20radial%20inteiro%20marrom.png"
+          alt=""
+          className="absolute top-1/2 -translate-y-1/2 pointer-events-none opacity-50"
+          style={{ left: '-14vh', width: '50vh', height: '50vh', objectFit: 'contain' }}
+        />
+        <img
+          src="/fraternidade/forma%20radial%20inteiro%20marrom.png"
+          alt=""
+          className="absolute top-1/2 -translate-y-1/2 pointer-events-none opacity-50"
+          style={{ right: '-14vh', width: '50vh', height: '50vh', objectFit: 'contain', transform: 'translateY(-50%) scaleX(-1)' }}
+        />
+
+        {/* Foto do frade, centralizada, mais estreita que a tela toda */}
+        <div className="relative w-[67%] h-full overflow-hidden">
           {frade.fotoUrl ? (
             <img src={frade.fotoUrl} alt={frade.nome} className="w-full h-full object-cover object-top" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white/50 text-sm">Sem Foto</div>
+            <div className="w-full h-full flex items-center justify-center text-white/60 text-sm">Sem foto</div>
           )}
         </div>
       </div>
+
+      {/* Marca d'água em forma de Tau (símbolo franciscano), asset real, atrás do texto */}
+      <img
+        src="/fraternidade/tau.png"
+        alt=""
+        className="absolute pointer-events-none opacity-50"
+        style={{ top: '43vh', left: '50%', transform: 'translateX(-50%)', width: '27vw', zIndex: 0 }}
+      />
 
       {/* =========================================
           CONTEÚDO DO PERFIL (DADOS DO SANITY)
       ========================================= */}
-      <div className="w-full max-w-2xl px-6 flex flex-col items-center text-center mt-6 relative z-10">
-        
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#8B1E31] tracking-wide uppercase mb-2">
-          {frade.nome}
-        </h1>
+      <h1
+        style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.7rem, 6.6vw, 4.9rem)' }}
+        className="relative z-[1] mt-[3.3vh] text-center uppercase text-[#8B1E31] leading-[1.08] px-[8%]"
+      >
+        {frade.nome}
+      </h1>
 
-        <div className="w-16 h-1.5 bg-[#C79C45] rounded-full my-3"></div>
+      <img src="/fraternidade/retangulo%20separa%C3%A7%C3%A3o.png" alt="" className="relative z-[1] mt-[3.3vh] w-[14%] h-auto" />
 
-        <div className="mb-6">
-          {frade.dataNascimento && (
-            <p className="text-2xl font-black text-[#5A3B2B] tracking-widest mb-1">
-              {formatarData(frade.dataNascimento)}
-            </p>
-          )}
-          {frade.origem && (
-            <p className="text-lg font-bold text-[#7A5B4B] tracking-wide">
-              {frade.origem}
-            </p>
-          )}
-        </div>
+      {frade.dataNascimento && (
+        <p
+          style={{ fontFamily: 'var(--font-bold)', fontSize: 'clamp(1rem, 4.3vw, 3.1rem)' }}
+          className="relative z-[1] mt-[3.6vh] text-[#491F14] tracking-wide"
+        >
+          {formatarData(frade.dataNascimento)}
+        </p>
+      )}
 
-        {frade.descricao && (
-          <p className="text-[#4A3022] text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-10 px-4 whitespace-pre-line">
-            {frade.descricao}
-          </p>
-        )}
-      </div>
+      {frade.origem && (
+        <p
+          style={{ fontFamily: 'var(--font-bold)', fontSize: 'clamp(0.85rem, 3.5vw, 2.5rem)' }}
+          className="relative z-[1] mt-[1vh] text-[#7A5B4B]"
+        >
+          {frade.origem}
+        </p>
+      )}
+
+      {frade.descricao && (
+        <p
+          style={{ fontFamily: 'var(--font-regular)', fontSize: 'clamp(0.72rem, 3vw, 2.15rem)' }}
+          className="relative z-[1] mt-[3.4vh] text-[#491F14] leading-[1.42] text-center max-w-[27em] px-[11%] whitespace-pre-line"
+        >
+          {frade.descricao}
+        </p>
+      )}
 
       {/* =========================================
           BOTÕES DE NAVEGAÇÃO INFERIOR
       ========================================= */}
-      <div className="w-full max-w-2xl mx-auto flex justify-between items-center px-6 mt-auto relative z-10 pt-4">
-        
-        <Link href="/sobre-nos/fraternidade" className="w-14 h-14 bg-[#8B1E31] rounded-full flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform border-2 border-white/20">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-        </Link>
-
-{/* Botão Início - Adicionamos o ?ativo=true para pular a tela de descanso */}
-<Link href="/?ativo=true" className="px-6 py-3 bg-[#8B1E31] rounded-full flex items-center gap-3 text-white font-bold tracking-wide shadow-lg active:scale-95 transition-transform border-2 border-white/20">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path d="M11.47 3.841a.75.75 0 011.06 0l8.99 8.998c.3.3.087.82-.338.82h-2.154v7.091a1.5 1.5 0 01-1.5 1.5h-4.5a1.5 1.5 0 01-1.5-1.5v-4.5h-3v4.5a1.5 1.5 0 01-1.5 1.5h-4.5a1.5 1.5 0 01-1.5-1.5v-7.091H1.547c-.425 0-.638-.52-.339-.82l8.99-8.998z" />
-  </svg>
-  INÍCIO
-</Link>
-      </div>
+      <NavVoltarInicio hrefVoltar="/sobre-nos/fraternidade" className="relative z-[1] w-full mt-[4vh] mb-[4vh]" />
 
     </div>
   );
