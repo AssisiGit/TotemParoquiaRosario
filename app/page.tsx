@@ -25,7 +25,7 @@ export default async function Page() {
   const configTotem = await getConfigTotem(); // Puxa as configs do Sanity (mesmas de todas as telas)
   
   return (
-    <Suspense fallback={<div className="w-full h-screen bg-[#FDFBF7] flex items-center justify-center text-[#8B1E31] text-2xl">Carregando Totem...</div>}>
+    <Suspense fallback={<div style={{ fontFamily: 'var(--font-asah)' }} className="w-full h-screen bg-[#F7F5EB] flex items-center justify-center text-[#8B1E31] text-2xl">Carregando Totem...</div>}>
       {/* Passamos as configurações como uma nova propriedade para a tela visual */}
       <TotemClient menuItens={menuItens} config={configTotem} />
     </Suspense>

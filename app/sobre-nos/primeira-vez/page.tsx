@@ -8,7 +8,7 @@ export default async function PrimeiraVezPage() {
   const pagina = await getPaginaPrimeiraVez();
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#FBF6EE] select-none">
+    <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
       {/* 1) FOTO DO SANITY — ocupa a tela inteira, atrás de tudo */}
       {pagina?.imagemUrl ? (
@@ -40,14 +40,14 @@ export default async function PrimeiraVezPage() {
       {/* 4) TEXTO DE BOAS-VINDAS */}
       <div className="absolute inset-x-0 top-0 z-10 flex flex-col items-center text-center px-6 pt-[6.2vh]">
         <p
-          style={{ fontFamily: 'var(--font-medium)', fontSize: 'clamp(0.72rem, 4.4vw, 3rem)' }}
+          style={{ fontFamily: 'var(--font-medium)', fontSize: 'clamp(0.82rem, 5vw, 3.4rem)' }}
           className="uppercase tracking-[0.2em] text-[#3F3F3A] leading-none"
         >
           Primeira Vez Aqui
         </p>
 
         <h1
-          style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.7rem, 8.8vw, 6rem)' }}
+          style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.4rem, 7.07vw, 4.82rem)' }}
           className="text-[#8B1E31] leading-tight mt-[1.1vh]"
         >
           Seja bem-vindo(a)!

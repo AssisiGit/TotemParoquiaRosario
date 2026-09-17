@@ -43,6 +43,21 @@ export default defineType({
       options: { hotspot: true },
     }),
     defineField({
+      name: 'corCabecalho',
+      title: 'Cor do cabeçalho',
+      description:
+        'Cor do fundo atrás da foto, no topo da tela deste frade. O design alterna entre dourado e vinho de um frade para outro — escolha aqui qual usar.',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Dourado', value: 'dourado' },
+          { title: 'Vinho', value: 'vinho' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'dourado',
+    }),
+    defineField({
       name: 'ordem',
       title: 'Ordem de Exibição',
       type: 'number',

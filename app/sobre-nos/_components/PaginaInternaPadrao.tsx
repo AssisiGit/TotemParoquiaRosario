@@ -11,7 +11,7 @@ export async function PaginaInternaPadrao({ titulo }: { titulo: string }) {
   const config = await getConfigTotem();
 
   return (
-    <div className="min-h-screen bg-[#F2F0E9] relative select-none overflow-hidden pb-12">
+    <div className="min-h-screen bg-[#F7F5EB] relative select-none overflow-hidden pb-12">
       {config?.marcaDaguaUrl && (
         <div
           className="absolute inset-0 opacity-[0.090] bg-cover bg-center pointer-events-none"

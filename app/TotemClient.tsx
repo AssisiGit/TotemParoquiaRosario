@@ -63,40 +63,64 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
   }, [temCarrossel]);
 
   return (
-    <div className="relative w-full h-screen bg-[#F2F0E9] overflow-hidden select-none">
+    <div className="relative w-full h-screen bg-[#F7F5EB] overflow-hidden select-none">
 
-      {/* TELA 1: DESCANSO / TOQUE PARA INICIAR */}
-      <div 
-        className={`absolute inset-0 z-50 bg-[#F2F0E9] flex flex-col items-center justify-center transition-opacity duration-700 cursor-pointer ${
+      {/* TELA 1: DESCANSO / TOQUE PARA INICIAR
+          Montada com os recortes reais de public/looping. Cada bloco é
+          posicionado por `top` em vh, na mesma proporção do design — por isso
+          não usa fluxo/margens aqui. */}
+      <div
+        className={`absolute inset-0 z-50 bg-[#F7F5EB] overflow-hidden transition-opacity duration-700 cursor-pointer ${
           tela === 'repouso' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Marca d'água no fundo do descanso */}
-        {config?.marcaDaguaUrl && (
-          <div 
-            className="absolute inset-0 opacity-[0.090] bg-cover bg-center" 
-            style={{ backgroundImage: `url(${config.marcaDaguaUrl})` }}
-          ></div>
-        )}
-        
-        <div className="relative z-10 flex flex-col items-center text-center px-8">
-          <p className="text-2xl font-bold text-[#5A3B2B] mb-6 uppercase tracking-widest">
-            Seja bem-vindo(a)
-          </p>
-          
-          <div className="h-64 mb-8 flex items-center justify-center">
-            {config?.logoSantuarioUrl ? (
-               <img src={config.logoSantuarioUrl} alt="Logo" className="max-h-full object-contain" />
-            ) : (
-               <span className="text-gray-500">Sua Logo Aqui</span>
-            )}
-          </div>
+        {/* Divino Espírito Santo em traço claro, atrás de tudo (mesmo recorte
+            usado em Avisos e Redes Sociais) */}
+        <img
+          src="/avisos/vetor%20divino%20espirito.png"
+          alt=""
+          className="absolute left-1/2 -translate-x-1/2 top-[1.2vh] w-full h-auto z-0 pointer-events-none"
+        />
 
-          <div className="animate-pulse flex flex-col items-center mt-12">
-            <p className="text-4xl font-bold text-[#5A3B2B] mb-6">Toque para Iniciar</p>
-            <div className="w-12 h-12 rounded-full border-4 border-[#C79C45] bg-[#C79C45]/20 flex items-center justify-center">
-              <div className="w-6 h-6 rounded-full bg-[#C79C45]"></div>
-            </div>
+        <div className="absolute inset-x-0 top-[9.3vh] z-[2] flex justify-center">
+          <img src="/dizimo/TAU.png" alt="" style={{ width: '5.2vw' }} className="h-auto" />
+        </div>
+
+        <div
+          style={{ fontFamily: 'var(--font-bold)', fontSize: 'clamp(1.2rem, 5.36vw, 3.86rem)' }}
+          className="absolute inset-x-0 top-[17.3vh] z-[2] text-center text-[#491F14] leading-[1.2]"
+        >
+          Seja bem-vindo(a) ao
+        </div>
+
+        {/* Brasão: pomba com raios atrás, igreja na frente */}
+        <div className="absolute inset-x-0 top-[26.1vh] z-[2] flex justify-center">
+          <img src="/looping/espirito%20santo.png" alt="" className="w-[44.5%] h-auto" />
+        </div>
+        <div className="absolute inset-x-0 top-[37.5vh] z-[3] flex justify-center">
+          <img src="/looping/santuario%20logo.png" alt="Santuário Divino Espírito Santo" className="w-[39.3%] h-auto" />
+        </div>
+
+        {/* Marca escrita */}
+        <div className="absolute inset-x-0 top-[58.7vh] z-[4] flex flex-col items-center">
+          <img src="/looping/santuario.png" alt="" className="w-[64.4%] h-auto" />
+          <img src="/looping/divino%20espirito%20santo.png" alt="" className="w-[63.2%] h-auto mt-[0.3vh]" />
+          <img src="/looping/vila%20velha%20espirito%20santo.png" alt="" className="w-[50.4%] h-auto mt-[0.35vh]" />
+        </div>
+
+        {/* Chamada para o toque. O pulsar fica só aqui, para o brasão não piscar. */}
+        <div
+          style={{ fontFamily: 'var(--font-bold)', fontSize: 'clamp(1.5rem, 6.72vw, 4.84rem)' }}
+          className="absolute inset-x-0 top-[78.9vh] z-[2] text-center text-[#491F14] leading-[1.2] animate-pulse"
+        >
+          Toque para Iniciar
+        </div>
+        <div className="absolute inset-x-0 top-[86vh] z-[2] flex justify-center animate-pulse">
+          <div
+            className="aspect-square rounded-full flex items-center justify-center"
+            style={{ width: '7vw', border: '0.55vw solid #C49334' }}
+          >
+            <div className="w-[46%] h-[46%] rounded-full bg-[#C49334]" />
           </div>
         </div>
       </div>
@@ -136,13 +160,13 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
              </div>
           )}
           
-          {/* Degradê inferior da foto (Ajustado com a nova cor de fundo #F2F0E9) */}
-          <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#F2F0E9] to-transparent z-10"></div>
+          {/* Degradê inferior da foto (Ajustado com a nova cor de fundo #F7F5EB) */}
+          <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#F7F5EB] to-transparent z-10"></div>
         </div>
 
         {/* ÁREA DOS BOTÕES */}
         {/* A Mágica 2: 'overflow-y-auto' permite rolar a tela se a tela for pequena */}
-        <div className="flex-1 overflow-y-auto bg-[#F2F0E9] pt-8 sm:pt-10 px-4 sm:px-6 pb-24 flex flex-col items-center relative">
+        <div className="flex-1 overflow-y-auto bg-[#F7F5EB] pt-8 sm:pt-10 px-4 sm:px-6 pb-24 flex flex-col items-center relative">
           
       {/* Marca d'água de fundo atrás dos botões */}
           {config?.marcaDaguaUrl && (
@@ -157,7 +181,10 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
             ></div>
           )}
 
-          <h2 className="text-5xl sm:text-6xl font-serif font-light text-[#8B1E31] mb-8 sm:mb-12 uppercase tracking-widest relative z-10">
+          <h2
+            style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.6rem, 7vw, 5rem)' }}
+            className="text-[#8B1E31] mb-8 sm:mb-12 uppercase tracking-[0.06em] leading-[1.1] relative z-10"
+          >
             Menu Inicial
           </h2>
 
@@ -181,7 +208,10 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
                    )}
                 </div>
                 
-                <span className="text-[#5A3B2B] font-bold text-[10px] sm:text-base tracking-wide text-center uppercase">
+                <span
+                  style={{ fontFamily: 'var(--font-bold)' }}
+                  className="text-[#5A3B2B] text-[10px] sm:text-base tracking-wide text-center uppercase"
+                >
                   {item.titulo}
                 </span>
               </Link>

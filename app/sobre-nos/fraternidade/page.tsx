@@ -30,7 +30,7 @@ export default async function FraternidadePage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-[#F2F0E9] relative select-none overflow-hidden">
+    <div className="min-h-screen bg-[#F7F5EB] relative select-none overflow-hidden">
 
       {/* Raio decorativo (asset real, public/fraternidade), atrás da lista */}
       <img
@@ -51,7 +51,10 @@ export default async function FraternidadePage() {
 
         {/* Se a lista estiver vazia no Sanity */}
         {frades.length === 0 && (
-          <p className="text-center text-[#5A3B2B] mt-10 font-bold">
+          <p
+            style={{ fontFamily: 'var(--font-bold)' }}
+            className="text-center text-[#5A3B2B] mt-10"
+          >
             Nenhum frade cadastrado no momento. Acesse o painel para adicionar.
           </p>
         )}

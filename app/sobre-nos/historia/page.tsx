@@ -13,19 +13,24 @@ const PARAGRAFOS = [
 
 export default function HistoriaPage() {
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#F8F5EB] select-none">
+    <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
-      {/* 1) Ilustração do santuário — imagem estática, ocupa a tela toda */}
+      {/* 1) Ilustração do santuário — imagem estática, ocupa a tela toda.
+             O recorte já vem em 1080x1920 (1:1 com a tela), mas no design ele
+             aparece ~8vh mais baixo do que o arquivo posiciona. O translate
+             acerta isso: o que sobra em cima é creme igual ao fundo, e o que
+             sai embaixo fica atrás do cartão de texto. */}
       <img
         src="/nossahistoria/fundo.png"
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ transform: 'translateY(8vh)' }}
       />
 
       {/* 2) Título */}
       <h1
         style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.9rem, 8.3vw, 6.1rem)' }}
-        className="absolute left-[9%] top-[8.4vh] z-[5] uppercase text-[#8B1E31] leading-[1.05]"
+        className="absolute left-[9%] top-[20.3vh] z-[5] uppercase text-[#8B1E31] leading-[1.05]"
       >
         Nossa
         <br />

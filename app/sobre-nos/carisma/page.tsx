@@ -14,7 +14,7 @@ export default async function CarismaPage() {
   const pagina = await getPaginaCarisma();
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#FFF8E1] select-none">
+    <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
       {/* 1) FOTO (Sanity) — ocupa a tela toda, atrás do degradê */}
       {pagina?.imagemUrl ? (
@@ -47,10 +47,10 @@ export default async function CarismaPage() {
               key={i}
               style={{
                 fontFamily: 'var(--font-regular)',
-                fontSize: 'clamp(0.72rem, 3vw, 2.1rem)',
+                fontSize: 'clamp(0.84rem, 3.5vw, 2.52rem)',
                 marginTop: i === 0 ? 0 : '3.4vh',
               }}
-              className="text-[#241C14] leading-[1.42] max-w-[21em]"
+              className="text-[#241C14] leading-[1.42] max-w-[22em]"
             >
               {texto}
             </p>

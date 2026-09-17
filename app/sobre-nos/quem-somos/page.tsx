@@ -14,7 +14,7 @@ export default async function QuemSomosPage() {
   const pagina = await getPaginaQuemSomos();
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#F8F5EB] select-none">
+    <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
       {/* 1) FOTO DO SANTUÁRIO (Sanity) — aparece no topo, atrás do arco */}
       {pagina?.imagemUrl ? (
@@ -25,22 +25,27 @@ export default async function QuemSomosPage() {
         </div>
       )}
 
-      {/* 2) Arco bege que cobre a parte de baixo da foto */}
+      {/* 2) Arco bege que cobre a parte de baixo da foto.
+             O recorte tem 1080x1475, então a largura cheia faz o topo do arco
+             cair em ~23vh. O design quer o arco começando em ~33vh, por isso
+             ele é empurrado 9.8vh para baixo — a parte que sai da tela é só a
+             faixa lisa de baixo, que continua cobrindo até a borda. */}
       <img
         src="/quemsomos/forma%20branca.png"
         alt=""
-        className="absolute bottom-0 left-0 w-full h-auto pointer-events-none"
+        className="absolute left-0 w-full h-auto pointer-events-none"
+        style={{ bottom: '-9.8vh' }}
       />
 
       {/* 3) Marca d'água do Cristo, atrás do texto */}
       <img
         src="/quemsomos/jesus.png"
         alt=""
-        className="absolute left-0 top-[43%] w-[67%] h-auto pointer-events-none"
+        className="absolute left-0 top-[51%] w-[67%] h-auto pointer-events-none"
       />
 
       {/* 4) TÍTULO E TEXTO */}
-      <div className="absolute inset-x-0 top-[31.9vh] z-10 flex flex-col items-center text-center px-6">
+      <div className="absolute inset-x-0 top-[39.3vh] z-10 flex flex-col items-center text-center px-6">
         <h1
           style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(2rem, 11.6vw, 8rem)' }}
           className="uppercase text-[#8B1E31] leading-[1.02]"

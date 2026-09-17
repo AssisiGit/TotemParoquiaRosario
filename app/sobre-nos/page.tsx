@@ -24,7 +24,7 @@ export default async function SobreNosPage() {
   const config = await getConfigTotem();
 
   return (
-    <div className="min-h-screen bg-[#F2F0E9] relative select-none overflow-hidden pb-12">
+    <div className="min-h-screen bg-[#F7F5EB] relative select-none overflow-hidden pb-12">
 
       {/* Marca d'água de fundo (mesma imagem usada no Menu Inicial) */}
       {config?.marcaDaguaUrl && (

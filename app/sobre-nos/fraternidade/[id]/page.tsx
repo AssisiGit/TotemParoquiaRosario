@@ -15,6 +15,7 @@ async function getFradeDetalhes(id: string) {
     dataNascimento,
     origem,
     descricao,
+    corCabecalho,
     "fotoUrl": foto.asset->url
   }`;
 
@@ -40,20 +41,36 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
 
   if (!frade) {
     return (
-      <div className="min-h-screen bg-[#F8F5EB] flex flex-col items-center justify-center p-6 text-center select-none">
-        <h1 className="text-3xl font-serif font-bold text-[#8B1E31] mb-4">Frade não encontrado.</h1>
+      <div className="min-h-screen bg-[#F7F5EB] flex flex-col items-center justify-center p-6 text-center select-none">
+        <h1
+          style={{ fontFamily: 'var(--font-asah)' }}
+          className="text-3xl text-[#8B1E31] mb-4 uppercase"
+        >
+          Frade não encontrado.
+        </h1>
         <p className="text-gray-600 mb-8 max-w-md">
           Não conseguimos carregar os dados deste frade. Verifique se ele está publicado corretamente no painel do Sanity.
         </p>
-        <Link href="/sobre-nos/fraternidade" className="bg-[#8B1E31] text-white px-8 py-3 rounded-full font-bold uppercase tracking-wider shadow-lg">
+        <Link
+          href="/sobre-nos/fraternidade"
+          style={{ fontFamily: 'var(--font-bold)' }}
+          className="bg-[#8B1E31] text-white px-8 py-3 rounded-full uppercase tracking-wider shadow-lg"
+        >
           Voltar para Fraternidade
         </Link>
       </div>
     );
   }
 
+  // O design alterna a cor do cabeçalho entre os frades. A escolha vem do
+  // Sanity ("Cor do cabeçalho"); quem não tiver nada preenchido cai no dourado.
+  const dourado = frade.corCabecalho !== 'vinho';
+  const raio = dourado
+    ? '/fraternidade/forma%20radial%20inteiro.png'
+    : '/fraternidade/forma%20radial%20inteiro%20marrom.png';
+
   return (
-    <div className="min-h-screen bg-[#F8F5EB] relative select-none overflow-hidden flex flex-col items-center">
+    <div className="min-h-screen bg-[#F7F5EB] relative select-none overflow-hidden flex flex-col items-center">
 
       {/* =========================================
           CABEÇALHO — degradê vinho com "sunburst" decorativo (asset real,
@@ -63,21 +80,22 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
         className="relative w-full h-[38vh] flex-shrink-0 overflow-hidden flex justify-center"
         style={{
           borderRadius: '0 0 clamp(1.6rem, 6vw, 4.2rem) clamp(1.6rem, 6vw, 4.2rem)',
-          background: 'linear-gradient(120deg, #D7355A 0%, #8E1D38 55%, #7A1B37 100%)',
+          background: dourado ? '#C49334' : '#8B1E31',
         }}
       >
-        {/* Raios decorativos nas laterais (asset real, espelhado do lado direito) */}
+        {/* Raios decorativos saindo pelas bordas (assets reais). No fundo
+            dourado usam a versão creme; no vinho, a versão escura. */}
         <img
-          src="/fraternidade/forma%20radial%20inteiro%20marrom.png"
+          src={raio}
           alt=""
-          className="absolute top-1/2 -translate-y-1/2 pointer-events-none opacity-50"
-          style={{ left: '-14vh', width: '50vh', height: '50vh', objectFit: 'contain' }}
+          className="absolute pointer-events-none"
+          style={{ left: '-13vh', top: '-4vh', width: '34vh', height: '34vh', objectFit: 'contain' }}
         />
         <img
-          src="/fraternidade/forma%20radial%20inteiro%20marrom.png"
+          src={raio}
           alt=""
-          className="absolute top-1/2 -translate-y-1/2 pointer-events-none opacity-50"
-          style={{ right: '-14vh', width: '50vh', height: '50vh', objectFit: 'contain', transform: 'translateY(-50%) scaleX(-1)' }}
+          className="absolute pointer-events-none"
+          style={{ right: '-13vh', top: '6vh', width: '34vh', height: '34vh', objectFit: 'contain', transform: 'scaleX(-1)' }}
         />
 
         {/* Foto do frade, centralizada, mais estreita que a tela toda */}
@@ -95,15 +113,15 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
         src="/fraternidade/tau.png"
         alt=""
         className="absolute pointer-events-none opacity-50"
-        style={{ top: '43vh', left: '50%', transform: 'translateX(-50%)', width: '27vw', zIndex: 0 }}
+        style={{ top: '42vh', left: '50%', transform: 'translateX(-50%)', width: '40vw', zIndex: 0 }}
       />
 
       {/* =========================================
           CONTEÚDO DO PERFIL (DADOS DO SANITY)
       ========================================= */}
       <h1
-        style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.7rem, 6.6vw, 4.9rem)' }}
-        className="relative z-[1] mt-[3.3vh] text-center uppercase text-[#8B1E31] leading-[1.08] px-[8%]"
+        style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.9rem, 7.4vw, 5.3rem)' }}
+        className="relative z-[1] mt-[3.3vh] text-center uppercase text-[#8B1E31] leading-[1.08] max-w-[64%]"
       >
         {frade.nome}
       </h1>
@@ -130,8 +148,8 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
 
       {frade.descricao && (
         <p
-          style={{ fontFamily: 'var(--font-regular)', fontSize: 'clamp(0.72rem, 3vw, 2.15rem)' }}
-          className="relative z-[1] mt-[3.4vh] text-[#491F14] leading-[1.42] text-center max-w-[27em] px-[11%] whitespace-pre-line"
+          style={{ fontFamily: 'var(--font-regular)', fontSize: 'clamp(0.78rem, 3.25vw, 2.34rem)' }}
+          className="relative z-[1] mt-[3.4vh] text-[#491F14] leading-[1.42] text-center px-[9%] whitespace-pre-line"
         >
           {frade.descricao}
         </p>
