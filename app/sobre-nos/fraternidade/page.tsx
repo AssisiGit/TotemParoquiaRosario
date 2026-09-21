@@ -30,7 +30,10 @@ export default async function FraternidadePage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-[#F7F5EB] relative select-none overflow-hidden">
+    // h-screen + overflow-hidden: a tela do totem nunca rola. Só a lista de
+    // frades rola por dentro, e apenas se a secretaria cadastrar mais frades
+    // do que cabem na tela.
+    <div className="h-screen bg-[#F7F5EB] relative select-none overflow-hidden flex flex-col">
 
       {/* Raio decorativo (asset real, public/fraternidade), atrás da lista */}
       <img
@@ -46,8 +49,11 @@ export default async function FraternidadePage() {
       {/* BOTÕES DE NAVEGAÇÃO TOPO (Voltar / Início) */}
       <NavVoltarInicio hrefVoltar="/sobre-nos" className="relative z-10 mt-[6vh]" />
 
-      {/* LISTA DINÂMICA DE FRADES (Botões Dourados) */}
-      <div className="w-full flex flex-col gap-[2.3vh] px-[9%] mt-[2.5vh] pb-[4vh] relative z-10">
+      {/* LISTA DINÂMICA DE FRADES (Botões Dourados)
+          Ocupa a altura que sobrou e espalha os botões nela. Com a quantidade
+          de frades de hoje tudo cabe sem rolar; se um dia entrarem frades
+          demais, só esta caixa rola — a tela em si nunca. */}
+      <div className="w-full flex-1 min-h-0 overflow-y-auto flex flex-col justify-start gap-[1.5vh] px-[9%] py-[1vh] relative z-10">
 
         {/* Se a lista estiver vazia no Sanity */}
         {frades.length === 0 && (

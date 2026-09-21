@@ -9,20 +9,19 @@ export default async function ConfissoesPage() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
-      {/* 1) FOTO DE FUNDO (Sanity) + degradê, atrás do título e horários */}
-      <div className="absolute inset-x-0 top-0 w-full h-[56vh] z-0 overflow-hidden">
+      {/* 1) FOTO DE FUNDO (Sanity), atrás do título e horários.
+          O arquivo (1080x1706) já vem com o esmaecido embutido no próprio alfa:
+          opacidade ~0.85 no topo caindo para 0 por volta de 76% da altura dele.
+          Por isso ele é desenhado em tamanho natural (1:1 com o design, largura
+          cheia) e SEM degradê por cima — o degradê de creme que existia aqui
+          derrubava a foto para ~38% e era o motivo de os dois senhores quase
+          não aparecerem. */}
+      <div className="absolute inset-x-0 top-0 w-full z-0">
         {pagina?.fotoFundoUrl ? (
-          <img src={pagina.fotoFundoUrl} alt="" className="w-full h-full object-cover" />
+          <img src={pagina.fotoFundoUrl} alt="" className="block w-full h-auto" />
         ) : (
-          <div className="w-full h-full bg-gray-300" />
+          <div className="w-full h-[56vh] bg-gray-300" />
         )}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(to bottom, rgba(247,245,235,.55) 0%, rgba(247,245,235,.93) 45%, #F7F5EB 78%)',
-          }}
-        />
       </div>
 
       {/* 2) TÍTULO + HORÁRIOS + CTA */}
@@ -76,23 +75,19 @@ export default async function ConfissoesPage() {
         </p>
       </div>
 
-      {/* 3) FOTO PRINCIPAL (Sanity), na parte de baixo */}
-      <div className="absolute inset-x-0 bottom-0 w-full h-[46vh] z-0 overflow-hidden">
-        <div
-          className="absolute inset-0 w-full h-full"
-          style={{
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 12%)',
-            maskImage: 'linear-gradient(to bottom, transparent 0%, black 12%)',
-          }}
-        >
-          {pagina?.fotoPrincipalUrl ? (
-            <img src={pagina.fotoPrincipalUrl} alt="" className="w-full h-full object-cover object-top" />
-          ) : (
-            <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500 text-center px-6">
-              Cadastre as fotos desta página no Sanity (Confissões)
-            </div>
-          )}
-        </div>
+      {/* 3) FOTO PRINCIPAL (Sanity) — como no mockup: tamanho natural
+          (1080x1244), largura cheia, encostando no rodapé da tela e com os
+          botões Voltar/Início por cima. Esse arquivo também já traz o
+          esmaecido do topo no alfa, então não leva máscara nem degradê; antes
+          ela era cortada em 54vh com `object-top` e o chão/os pés sumiam. */}
+      <div className="absolute inset-x-0 bottom-0 w-full z-0">
+        {pagina?.fotoPrincipalUrl ? (
+          <img src={pagina.fotoPrincipalUrl} alt="" className="block w-full h-auto" />
+        ) : (
+          <div className="w-full h-[54vh] bg-gray-300 flex items-center justify-center text-gray-500 text-center px-6">
+            Cadastre as fotos desta página no Sanity (Confissões)
+          </div>
+        )}
       </div>
 
       {/* 4) BOTÕES SOBRE A FOTO */}

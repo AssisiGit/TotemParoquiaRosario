@@ -5,6 +5,11 @@ import { NavVoltarInicio } from '../_components/NavVoltarInicio';
 // A imagem de fundo (ilustração do santuário) não deve mudar tão cedo, então
 // não há schema/menu para ela, diferente de "Primeira Vez Aqui" e "Quem Somos".
 
+// O conteúdo desta tela é fixo, mas o protetor de tela (carrossel de
+// inatividade) é montado no layout e vem do Sanity — sem este revalidate a
+// página ficaria com a lista de slides congelada no build.
+export const revalidate = 60;
+
 const PARAGRAFOS = [
   'Desde sua inauguração em 1967, o Santuário do Divino Espírito Santo tornou-se um lugar de encontro, oração e esperança para inúmeras pessoas que buscam fortalecer sua caminhada com Deus.',
   'Como Santuário Franciscano, vivemos a espiritualidade da fraternidade, acolhendo cada peregrino com a simplicidade e a paz que marcaram a vida de São Francisco de Assis.',
@@ -16,21 +21,21 @@ export default function HistoriaPage() {
     <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
       {/* 1) Ilustração do santuário — imagem estática, ocupa a tela toda.
-             O recorte já vem em 1080x1920 (1:1 com a tela), mas no design ele
-             aparece ~8vh mais baixo do que o arquivo posiciona. O translate
-             acerta isso: o que sobra em cima é creme igual ao fundo, e o que
-             sai embaixo fica atrás do cartão de texto. */}
+             O recorte já vem em 1080x1920 (1:1 com a tela) e deixa ~103px de
+             creme acima da ponta da torre. O translate negativo sobe a imagem
+             até a torre encostar no topo da tela; o que sai embaixo fica atrás
+             do cartão de texto. */}
       <img
         src="/nossahistoria/fundo.png"
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ transform: 'translateY(8vh)' }}
+        style={{ transform: 'translateY(-5.2vh)' }}
       />
 
       {/* 2) Título */}
       <h1
         style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(1.9rem, 8.3vw, 6.1rem)' }}
-        className="absolute left-[9%] top-[20.3vh] z-[5] uppercase text-[#8B1E31] leading-[1.05]"
+        className="absolute left-[9%] top-[13vh] z-[5] uppercase text-[#8B1E31] leading-[1.05]"
       >
         Nossa
         <br />
@@ -38,17 +43,17 @@ export default function HistoriaPage() {
       </h1>
 
       {/* 3) Cartão branco (fundo do texto) — estático, cobre o restante da tela */}
-      <div className="absolute left-[9%] right-[9%] top-[40.5vh] bottom-0 z-[8] overflow-hidden">
+      <div className="absolute left-[9%] right-[9%] top-[36vh] bottom-[12.5vh] z-[8]">
         <img
           src="/nossahistoria/retangulo%20branco.png"
           alt=""
-          className="w-full h-full object-cover object-top"
+          className="w-full h-full object-fill"
         />
       </div>
 
       {/* 4) Texto sobre o cartão */}
       <div
-        className="absolute left-[9%] right-[9%] top-[40.5vh] bottom-0 z-10 flex flex-col items-center text-center"
+        className="absolute left-[9%] right-[9%] top-[36vh] bottom-[12.5vh] z-10 flex flex-col items-center text-center"
         style={{ paddingTop: '3.1vh', paddingLeft: '3%', paddingRight: '3%' }}
       >
         {PARAGRAFOS.map((texto, i) => (
@@ -56,7 +61,7 @@ export default function HistoriaPage() {
             key={i}
             style={{
               fontFamily: 'var(--font-regular)',
-              fontSize: 'clamp(0.62rem, 2.55vw, 1.85rem)',
+              fontSize: 'clamp(0.72rem, 2.95vw, 2.14rem)',
               marginTop: i === 0 ? 0 : '3vh',
             }}
             className="text-[#523229] leading-[1.42] max-w-[26em]"

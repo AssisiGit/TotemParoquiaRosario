@@ -14,7 +14,7 @@ export function CabecalhoComFundo({
 }) {
   return (
     <div
-      className="relative w-full h-[39vh] overflow-hidden shadow-xl"
+      className="relative w-full h-[39vh] shrink-0 overflow-hidden"
       style={{ borderRadius: '0 0 clamp(1.6rem, 6vw, 4.2rem) clamp(1.6rem, 6vw, 4.2rem)' }}
     >
       {imagemFundoUrl ? (
@@ -24,8 +24,28 @@ export function CabecalhoComFundo({
           Cadastre a &quot;Imagem de Fundo&quot; desta página no Sanity
         </div>
       )}
-      {/* Sobreposição escura para o texto branco aparecer melhor */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      {/* Sobreposição escura para o texto branco aparecer melhor.
+          Algumas fotos cadastradas no Sanity já vêm com os cantos de baixo
+          arredondados (pixels transparentes). Sem a máscara, o degradê pintava
+          preto sobre o creme naquele pedaço e aparecia uma faixa cinza
+          quebrando a curva. A máscara usa a própria foto como recorte, então o
+          escurecimento existe só onde a foto existe — qualquer que seja o
+          arredondamento do arquivo. */}
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+        style={
+          imagemFundoUrl
+            ? {
+                WebkitMaskImage: `url(${imagemFundoUrl})`,
+                maskImage: `url(${imagemFundoUrl})`,
+                WebkitMaskSize: 'cover',
+                maskSize: 'cover',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center',
+              }
+            : undefined
+        }
+      ></div>
 
       <div className="absolute inset-x-0 bottom-[2.2vh] w-full text-center px-4 z-[5]">
         <h1

@@ -16,7 +16,7 @@ export default async function EventosPage() {
       <img
         src="/eventos/evento%20vetor%20desenho.png"
         alt=""
-        className="absolute left-1/2 -translate-x-1/2 top-[29vh] w-[75%] h-auto z-0 pointer-events-none"
+        className="absolute left-1/2 -translate-x-1/2 top-[29vh] w-full h-auto z-0 pointer-events-none"
       />
 
       <h1

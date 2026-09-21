@@ -21,7 +21,7 @@ export function NavVoltarInicio({
   className?: string;
 }) {
   return (
-    <div className={`w-full flex justify-between items-center px-[9%] ${className}`}>
+    <div className={`w-full shrink-0 flex justify-between items-center px-[9%] ${className}`}>
       {/* Botão Voltar */}
       <Link
         href={hrefVoltar}

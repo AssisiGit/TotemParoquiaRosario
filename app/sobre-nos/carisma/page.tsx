@@ -16,21 +16,30 @@ export default async function CarismaPage() {
   return (
     <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
-      {/* 1) FOTO (Sanity) — ocupa a tela toda, atrás do degradê */}
+      {/* 1) FOTO (Sanity) — ocupa só a faixa de baixo da tela, para o texto
+             ficar inteiro sobre o creme. O enquadramento (object-position)
+             centraliza a foto nos frades: corta o teto escuro em cima e boa
+             parte do tapete vermelho embaixo. */}
       {pagina?.imagemUrl ? (
-        <img src={pagina.imagemUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div
+          className="absolute inset-x-0 bottom-0 w-full h-[43vh] overflow-hidden"
+          style={{
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 45%)',
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 45%)',
+          }}
+        >
+          <img
+            src={pagina.imagemUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 72%' }}
+          />
+        </div>
       ) : (
         <div className="absolute inset-x-0 top-0 h-[24vh] bg-gray-300 flex items-center justify-center text-gray-600 text-center px-8">
           Cadastre a imagem desta página no Sanity (Carisma)
         </div>
       )}
-
-      {/* 2) Degradê que cobre a parte de cima da foto, onde fica o texto */}
-      <img
-        src="/carisma/Degrade%20branco.png"
-        alt=""
-        className="absolute top-0 left-0 w-full h-auto pointer-events-none z-[5]"
-      />
 
       {/* 3) TÍTULO E TEXTO */}
       <div className="absolute inset-x-0 top-[6.7vh] z-10 flex flex-col items-center text-center px-[13%]">

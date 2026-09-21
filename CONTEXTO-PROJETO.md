@@ -115,6 +115,96 @@ tipo `../sobre-nos/_components/NavVoltarInicio`):
 Todos os tamanhos usam `clamp(min, vw, max)` em vez de rem/px fixos, porque a
 tela é grande (totem, não celular) — rem fixo fica minúsculo nela.
 
+## Tela física do totem e a regra do "nunca rolar"
+
+A TV que dá vida ao totem é uma **LG 60UA8550PSA** — 60", painel 4K
+(3840x2160), montada em pé. Em pé isso vira **9:16**, exatamente a proporção
+do design (1080x1920), então nenhuma tela precisa ser reproporcionada.
+
+Regra: **nenhuma tela pode rolar**. O visitante só toca em botão. A única
+exceção são listas que a secretaria alimenta (Pastorais, Avisos, Eventos,
+Fraternidade) — se um dia entrarem itens demais, **só a caixa da lista rola,
+nunca a página**.
+
+Como isso é garantido no código:
+
+- A página usa `h-screen ... overflow-hidden flex flex-col` (não
+  `min-h-screen`): a altura é a da tela e ponto.
+- Cabeçalho e barra Voltar/Início são `shrink-0` (já embutido em
+  `CabecalhoComFundo` e `NavVoltarInicio`).
+- O miolo é `flex-1 min-h-0`. Quando a quantidade de itens é fixa, ele usa
+  `justify-evenly` e o respiro entre os botões se ajusta sozinho à tela; quando
+  a lista vem do Sanity, ele usa `justify-start` + `overflow-y-auto` (com
+  `justify-evenly` numa caixa que rola, o topo da lista ficaria fora do alcance
+  do dedo).
+
+Medido em 19/09/2026, viewport 1080x1920: **todas as 15 rotas ficaram em 0px de
+rolagem**. `/sobre-nos` (estourava 49px) e `/sobre-nos/fraternidade` (118px)
+foram corrigidas nessa data — eram as duas únicas que vazavam.
+
+`/sobre-nos` é a tela mais apertada do projeto: cabeçalho (39vh) + 6 pílulas
+douradas + barra de navegação somam ~1816px dos 1920, sobrando só ~104px para
+todo o respiro. Ou seja, **não há folga ali**: qualquer elemento novo nessa
+tela exige tirar altura de outro.
+
+### Página de diagnóstico (`/diagnostico`)
+
+Ferramenta de instalação, **fora do menu** e fora do protetor de tela. Aberta
+na própria TV, mostra em letra grande o tamanho que aquele navegador realmente
+reporta, a proporção, o DPR e se a tipografia está travando no limite dos
+`clamp()` — com um veredito ("Encaixe perfeito" ou o que precisa ajustar).
+Serve para decidir a configuração sem chutar. Validada em 1080x1920 (perfeito),
+1080x1800 (acusa proporção errada) e 2160x3840 (acusa tipografia travada).
+
+**Configuração recomendada do aparelho** (o totem vai ser tocado por um mini PC
+/ notebook na HDMI): TV em **3840x2160 com escala de 200%**, girada para
+retrato. Assim o navegador enxerga 1080x1920 — exatamente o design — e ainda
+renderiza o texto em resolução dobrada (DPR 2), que é o resultado mais nítido
+possível. A alternativa 1920x1080 a 100% também dá 1080x1920, mas sem o ganho
+de nitidez. O que **não** serve sem ajuste no código é 4K a 100%: aí o
+navegador enxerga 2160x3840 e todos os `clamp()` travam no limite.
+
+Dois pontos que dependem de como o totem é ligado (ver "Itens em aberto"):
+
+1. **Precisa rodar em tela cheia / modo quiosque.** Uma barra de navegador
+   comendo 120px já espreme `/sobre-nos` a ponto dos botões se encostarem
+   (medido em 1080x1800: não rola, mas o respiro cai para 1px).
+2. **Se o navegador reportar 4K real (2160x3840 CSS)**, nada rola, mas tudo
+   encolhe pela metade em proporção: os `clamp(min, Xvw, max)` batem no `max`
+   e o título de Missas, por exemplo, sai com 5.4vw em vez dos 10.1vw do
+   design. Auditoria de 19/09/2026: dos 74 `clamp()` com `vw`, **70 têm o
+   `max` inerte em 1080px** (só travam acima disso), então levantar esses
+   limites conserta o 4K sem mexer em nada do design atual; só 4 precisam de
+   análise caso a caso.
+
+## Protetor de tela / inatividade (30s)
+
+Depois de **30 segundos sem toque** o totem sai da tela atual e passa o
+**carrossel de avisos** cadastrado no Sanity (`configTotem` → "Carrossel de
+Inatividade", até 8 imagens, 6s cada). Isso vale **em todas as telas**, não só
+no menu inicial. Quem cuida disso:
+
+- `app/_components/CarrosselInatividade.tsx` — o carrossel em si (fade de 1s
+  entre as imagens) e as duas constantes: `TEMPO_INATIVIDADE_MS` (30s) e
+  `DURACAO_SLIDE_MS` (6s). Mexer no tempo é mexer aqui, num lugar só.
+- `app/_components/ProtetorDeTela.tsx` — montado no `app/layout.tsx`, ou seja,
+  vale para o projeto inteiro. Nas páginas internas (Missas, Avisos, Sobre
+  Nós...) ele conta os 30s e sobrepõe o carrossel em `fixed inset-0 z-[100]`;
+  o toque seguinte manda o totem de volta para `/` ("Toque para Iniciar"),
+  pronto para a próxima pessoa. Se **não houver imagem cadastrada** no
+  carrossel, ele volta direto para `/` sem passar pelo carrossel.
+- `app/TotemClient.tsx` — o menu inicial continua com a máquina de estados
+  própria (`menu -> carrossel -> repouso -> menu`), porque lá o carrossel
+  convive com a tela de "Toque para Iniciar". Por isso o `ProtetorDeTela`
+  **se desliga em `/`** (dois donos do mesmo timer brigariam) e também em
+  `/studio` (ninguém quer o carrossel cobrindo o formulário no meio de um
+  cadastro).
+
+Como o carrossel vem do Sanity e o layout é quem busca, **toda página precisa
+de `export const revalidate = 60`** — inclusive as que não usam Sanity para
+nada (`/padroeiro` e `/sobre-nos/historia` ganharam o `revalidate` só por
+causa disso; sem ele a lista de slides ficaria congelada no build).
+
 ## Paleta e fontes (usar sempre estas, não inventar novas)
 
 - Fontes (variáveis CSS setadas em `app/layout.tsx`, arquivos em `app/fonts/`):
@@ -171,6 +261,7 @@ app/
     fraternidade/[id]/page.tsx  → detalhe de um frade
     _components/                → NavVoltarInicio, CabecalhoComFundo, BotaoDourado, PaginaInternaPadrao (órfão, ver pendências)
   studio/[[...tool]]/page.tsx   → Sanity Studio embutido
+  _components/                  → globais do totem (ProtetorDeTela, CarrosselInatividade)
 
 sanity/
   schemaTypes/                  → um pagina<Nome>.ts por página com conteúdo editável, + menuTotem, frade, configTotem
@@ -208,6 +299,117 @@ Todas as páginas abaixo seguem o fluxo descrito acima (design pixel-a-perfeito
 | Dízimo | `/dizimo` | `paginaDizimo` (QR Code) | "Seja um dizimista". Coração, TAU, título e frase do rodapé são fixos no código. Só o QR Code é editável — e é **opcional**: enquanto o campo estiver vazio vale o `public/dizimo/qr code.png`. A moldura vermelha/bege vem do próprio recorte; o QR do Sanity é sobreposto na área branca interna, então a secretaria envia só o quadrado do código |
 | Secretaria | `/secretaria` | `paginaSecretaria` | Horários (array de objetos dias+horario), telefones (array de string) e WhatsApp (texto + número) todos editáveis. A foto é **opcional** — vazia, vale `public/secretaria/foto.png`. A foto fica à direita, dissolvida no fundo com `mask-image` (gradiente pela esquerda + por baixo, `mask-composite: intersect`). Fundo desta tela e da de Dízimo é `#F7F5EB`, não o `#FDFBF7` das outras |
 | Redes Sociais | `/redesocial` | `paginaRedesSociais` (3 QR Codes) | **Atenção: a rota é `redesocial`, sem hífen** — é assim que está no `menuTotem`. Faixa vermelha (`#8B1E31`) de ponta a ponta com 3 colunas (ícone + QR), montada em `grid-cols-3` para ícone e QR ficarem no mesmo eixo. A moldura branca do QR é CSS (`border` + `border-radius`), não asset — por isso a secretaria envia só o quadrado do código. Os 3 campos são **opcionais**: vazios, valem os QR Codes de `public/redessociais/`. Reaproveita `public/avisos/vetor divino espirito.png` (fundo) e `public/dizimo/TAU.png` |
+
+## Rodada de ajustes visuais (19/09/2026)
+
+Pedidos do usuário, tela por tela, cada um verificado com captura em 1080x1920
+(Chrome headless — ver "Fluxo de prévia"):
+
+- **Looping** — os raios (`espirito santo.png`) subiram de 26.1vh para 19.9vh e
+  **voltaram para 26.1vh em 20/09/2026**. Subir era a correção errada: os
+  26.1vh são exatamente a posição do mockup (a pomba abre em 26% da altura, a
+  torre em 35.8%, a marca escrita em 57.3% — todos os outros blocos desta tela
+  já batiam com o mockup, só os raios estavam fora). O que de fato quebrava o
+  brasão é que **`santuario logo.png` é só o traço da igreja: 68% do arquivo é
+  transparente** (medido: 32% de alfa médio), então os feixes apareciam
+  atravessando o prédio e os dois recortes não liam como uma peça só. A
+  correção é uma `mask-image` nos raios
+  (`linear-gradient(to bottom, black 66%, transparent 74%)`), que os dissolve
+  na altura em que a nave começa a se alargar (49% da altura da igreja) — é
+  onde o mockup também os corta: eles abrem entre as torres e somem antes do
+  corpo do prédio (hoje `black 71%, transparent 78%`). Faltava ainda o
+  **encaixe** entre os dois recortes. O envelope do brasão já batia com o
+  mockup (583px de altura por 481 de largura, proporção 0.825, contra 576x475
+  do mockup) — o que estava fora era a proporção **interna**: no mockup a
+  igreja começa a 32.9% da altura do brasão e ocupa 67.1% dele; no código
+  começava a 37.6% e ocupava 62.4%. Ou seja, a igreja precisava ser ~7.5%
+  maior e subir ~27px para as torres entrarem mais fundo nos raios. Ficou
+  `w-[42.2%]` (era 39.3%) em `top-[36.1vh]` (era 37.5vh), e os três números do
+  mockup batem na medição. **É essa proporção interna que dá a sensação de
+  "encaixado"** — mexer só na posição vertical dos raios não resolve. Subir os
+  raios também tinha encostado o "Seja bem-vindo(a)
+  ao" na auréola da pomba (folga de 38px); com eles de volta em 26.1vh a folga
+  é de 123px. O par TAU→título (90px) sempre bateu com o mockup (~89px).
+  Atenção ao investigar: `espirito santo.png` tem um recorte vazado no formato
+  de uma igreja, mas ele é **vestigial** — é uma silhueta simplificada, de
+  outra versão da logo, e não corresponde ao `santuario logo.png` atual (o vão
+  tem 346px de largura num arquivo de 924, e a igreja é desenhada com 424px de
+  816 equivalentes). Não dá para usar esse vão para alinhar os dois.
+- **Menu Inicial** — foto do santuário de 45vh para 39vh (o menu sobe até a
+  grade da foto), ícones de `sm:w-40` (160px fixos) para `sm:w-[17.5vw]`
+  (189px no totem, e proporcionais em qualquer tela) e rótulos no dobro do
+  tamanho (`text-base` → `clamp(0.625rem, 2.96vw, 4rem)`). A logo do Santuário
+  (canto **superior direito** da foto, não inferior esquerdo) saiu de `h-20`
+  (80px fixos) para `clamp(3rem, 13.5vw, 18rem)` — 146px no totem — e o glow
+  branco atrás dela cresceu junto (`sm:w-72` → `sm:w-[40vw]`, offset
+  `-top-24` → `-top-[13vw]`), senão a logo maior passaria da borda da luz.
+- **Missas** — a foto do frei era `object-cover scale(1.35)` ancorada no rodapé,
+  saindo cortada e escondida atrás dos botões. Primeiro virou um quadro pequeno
+  acima da barra Voltar/Início, mas o mockup mostra o contrário: o frei grande,
+  **encostando no rodapé da tela, com os botões por cima dele**. Ficou
+  `object-contain object-bottom` numa caixa `bottom-0 h-[52vh]`, **fora** da
+  caixa da rosácea (que tem `overflow-hidden` e cortaria a foto). O corte reto
+  do recorte (na altura do livro vermelho, y=895 de 1217) agora cai exatamente
+  na borda da tela, então lê como enquadramento e o degradê que dissolvia essa
+  borda saiu. O respiro antes do CTA caiu de 6.5vh para 4vh.
+- **Confissões** — as duas fotos do Sanity **já trazem o esmaecido embutido no
+  próprio alfa** (a de fundo, 1080x1706, começa em ~0.85 de opacidade e chega a
+  0 por volta de 76% da altura dela; a principal, 1080x1244, começa
+  transparente e fica opaca lá pelo meio). O código repetia esse esmaecido por
+  cima — um degradê de creme de 55%→93% na de cima e uma `mask-image` na de
+  baixo — e o resultado era a foto do topo aparecendo a ~38%: os dois senhores
+  viravam fantasma. Os dois efeitos saíram e as duas fotos passaram a ser
+  desenhadas **em tamanho natural** (largura cheia, 1:1 com o design): a de
+  fundo ancorada no topo, a principal ancorada no rodapé, com os botões por
+  cima. Confirmado no navegador: 1080x1706 em `top: 0` e 1080x1244 terminando
+  em 1920. **Regra geral: antes de somar degradê numa foto do Sanity, conferir
+  se o arquivo já não traz o esmaecido no alfa** (`magick arquivo.png -crop
+  1x1+x+y +repage -format "%[pixel:p{0,0}]" info:`).
+- **Padroeiro** — bloco de texto subiu (`pt-7.2vh` → `pt-4.5vh`), corpo do texto
+  de 3.68vw para 4.05vw e a pomba subiu de `bottom-[-3.4vh]` para `bottom-[1.5vh]`.
+  Depois disso a última linha do parágrafo encostava na auréola dourada. A causa
+  era a **quebra de linha**: com `px-[19%]` o texto virava 7 linhas, e o mockup
+  tem 6. Coluna alargada para `px-[15%]` (70% da tela, as mesmas quebras do
+  mockup) e entrelinha de 1.62 para 1.46 (a do mockup, ~64px por linha). O
+  parágrafo perdeu 43px de altura e a folga até a ilustração foi de 24px para
+  77px — os ~78px do mockup. A pomba **não** mexeu.
+- **Eventos** — a marca d'água da igreja é um recorte cortado rente à torre da
+  direita; com 75% de largura essa borda reta caía dentro da tela. Em largura
+  cheia ela sai pelas duas bordas e o desenho fica simétrico.
+- **Nossa História** — ilustração com `translateY(-5.2vh)` (a ponta da torre
+  encosta no topo; o arquivo deixa ~103px de creme acima dela), título de
+  20.3vh para 13vh, cartão de texto de `object-cover` para `object-fill`
+  terminando em `bottom-[12.5vh]` — assim os quatro cantos arredondados do
+  recorte aparecem — e corpo de 2.55vw para 2.95vw.
+- **Carisma** — a foto era tela cheia e o terceiro parágrafo caía em cima dela.
+  Virou faixa de 43vh no rodapé, com `object-position: center 72%` (corta o teto
+  escuro e quase todo o tapete vermelho) e máscara de degradê nos 45% de cima.
+  O `Degrade branco.png` do design saiu de cena junto — a máscara faz o papel.
+- **Fraternidade / cabeçalho compartilhado** — a faixa cinza que quebrava a
+  curva **não era sombra de CSS**: as fotos de capa cadastradas no Sanity já vêm
+  com os cantos de baixo arredondados (pixels transparentes), e o degradê
+  escuro do `CabecalhoComFundo` pintava preto 70% sobre o creme naquele pedaço.
+  Agora o degradê usa a própria foto como `mask-image`, então ele só existe onde
+  a foto existe — funciona com qualquer arredondamento de arquivo. O `shadow-xl`
+  do cabeçalho também saiu.
+
+Todas as 15 rotas continuam em 0px de rolagem depois desses ajustes.
+
+### Fluxo de prévia (atualizado)
+
+O Playwright continua fora do projeto, mas nem é mais necessário: o Chrome
+instalado na máquina dá conta sozinho, sem instalar nada.
+
+```bash
+google-chrome-stable --headless=new --disable-gpu --hide-scrollbars \
+  --user-data-dir=/tmp/chrome-shot --force-device-scale-factor=1 \
+  --window-size=1080,1920 --virtual-time-budget=6000 \
+  --screenshot=/tmp/tela.png http://localhost:3000/missas
+```
+
+Para comparar antes/depois e inspecionar detalhe (o ImageMagick também já está
+na máquina): `magick antes.png depois.png +append -resize 700x comp.png` e
+`magick tela.png -crop 320x180+0+640 +repage -resize 640x zoom.png`.
 
 ## Pendências / próximos passos
 

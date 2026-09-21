@@ -68,13 +68,13 @@ export default async function MissasPage() {
 
         <p
           style={{ fontFamily: 'var(--font-bold)', fontSize: 'clamp(1.25rem, 5.57vw, 4.01rem)' }}
-          className="mt-[6.5vh] text-[#8B1E31] text-center leading-[1.28] px-[10%]"
+          className="mt-[4vh] text-[#8B1E31] text-center leading-[1.28] px-[10%]"
         >
           Participe conosco e<br />fortaleça sua fé
         </p>
       </div>
 
-      {/* 2) PADRÃO DECORATIVO + FOTO (Sanity), na parte de baixo */}
+      {/* 2) PADRÃO DECORATIVO (rosácea) atrás da foto */}
       <div className="absolute inset-x-0 bottom-0 w-full h-[51vh] z-0 overflow-hidden">
         <img
           src="/missas/vetor.png"
@@ -82,29 +82,29 @@ export default async function MissasPage() {
           className="absolute left-1/2 pointer-events-none"
           style={{ top: '-2vh', transform: 'translateX(-50%)', width: '112vw', height: 'auto', opacity: 0.9 }}
         />
-        <div
-          className="absolute inset-x-0 bottom-0 w-full h-[88%] z-[1]"
-          style={{
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14%)',
-            maskImage: 'linear-gradient(to bottom, transparent 0%, black 14%)',
-          }}
-        >
-          {pagina?.imagemUrl ? (
-            <img
-              src={pagina.imagemUrl}
-              alt=""
-              className="w-full h-full object-cover object-top"
-              style={{ transform: 'scale(1.35)', transformOrigin: 'bottom center' }}
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500 text-center px-6">
-              Cadastre a foto desta página no Sanity (Horário de Missas)
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* 3) BOTÕES SOBRE A FOTO */}
+      {/* 3) FOTO DO FREI (Sanity) — como no mockup: encosta no rodapé da tela e
+          os botões Voltar/Início ficam por cima dela. O recorte tem um corte
+          reto embaixo (na altura do livro), mas agora esse corte cai
+          exatamente na borda da tela, então ele lê como enquadramento e não
+          precisa de degradê. Fica fora da caixa da rosácea porque é mais alto
+          que ela (a rosácea tem overflow-hidden e cortaria a foto). */}
+      <div className="absolute inset-x-0 bottom-0 w-full h-[52vh] z-[1]">
+        {pagina?.imagemUrl ? (
+          <img
+            src={pagina.imagemUrl}
+            alt=""
+            className="w-full h-full object-contain object-bottom"
+          />
+        ) : (
+          <div className="w-full h-[27vh] absolute bottom-[11.5vh] bg-gray-300 flex items-center justify-center text-gray-500 text-center px-6">
+            Cadastre a foto desta página no Sanity (Horário de Missas)
+          </div>
+        )}
+      </div>
+
+      {/* 4) BOTÕES SOBRE A FOTO */}
       <NavVoltarInicio hrefVoltar="/" className="absolute inset-x-0 bottom-[4.2vh] z-20" />
     </div>
   );

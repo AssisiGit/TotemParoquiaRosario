@@ -24,7 +24,9 @@ export default async function SobreNosPage() {
   const config = await getConfigTotem();
 
   return (
-    <div className="min-h-screen bg-[#F7F5EB] relative select-none overflow-hidden pb-12">
+    // h-screen + overflow-hidden: a tela do totem nunca rola. O que distribui
+    // a sobra de altura é o "justify-evenly" da lista, logo abaixo.
+    <div className="h-screen bg-[#F7F5EB] relative select-none overflow-hidden flex flex-col">
 
       {/* Marca d'água de fundo (mesma imagem usada no Menu Inicial) */}
       {config?.marcaDaguaUrl && (
@@ -38,10 +40,13 @@ export default async function SobreNosPage() {
       <CabecalhoComFundo titulo="Sobre Nós" imagemFundoUrl={config?.fotoSantuarioUrl} />
 
       {/* BOTÕES DE NAVEGAÇÃO TOPO (Voltar / Início) */}
-      <NavVoltarInicio hrefVoltar="/?ativo=true" />
+      <NavVoltarInicio hrefVoltar="/?ativo=true" className="relative z-10 mt-[1.8vh]" />
 
-      {/* LISTA DE BOTÕES (Menu Dourado) */}
-      <div className="w-full flex flex-col gap-4 px-[9%] mt-10 relative z-10">
+      {/* LISTA DE BOTÕES (Menu Dourado)
+          Ocupa toda a altura que sobrou (flex-1) e espalha os 6 botões nela com
+          espaçamento igual. Assim o respiro entre eles se ajusta sozinho à tela,
+          em vez de ser um valor fixo que pode estourar os 100vh. */}
+      <div className="w-full flex-1 min-h-0 flex flex-col justify-evenly px-[9%] pb-[1.5vh] relative z-10">
         {botoesSobreNos.map((botao) => (
           <BotaoDourado key={botao.id} href={botao.rota} numero={botao.numero} titulo={botao.titulo} />
         ))}

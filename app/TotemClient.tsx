@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { ConfigTotem } from '../sanity/lib/getConfigTotem';
+import CarrosselInatividade, { TEMPO_INATIVIDADE_MS } from './_components/CarrosselInatividade';
 
 interface MenuItem {
   _id: string;
@@ -12,11 +13,6 @@ interface MenuItem {
   iconeUrl?: string;
   rota?: string;
 }
-
-// Quanto tempo sem toque até sair do Menu (para o carrossel, ou direto para "Toque para Iniciar")
-const TEMPO_INATIVIDADE_MS = 30000;
-// Quanto tempo cada imagem do carrossel fica na tela
-const DURACAO_SLIDE_MS = 6000;
 
 type Tela = 'menu' | 'carrossel' | 'repouso';
 
@@ -93,12 +89,26 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           Seja bem-vindo(a) ao
         </div>
 
-        {/* Brasão: pomba com raios atrás, igreja na frente */}
+        {/* Brasão: pomba com raios atrás, igreja na frente.
+            `santuario logo.png` é só o traço da igreja — 68% do arquivo é
+            transparente (as paredes são vazadas), então os raios apareciam
+            atravessando o prédio e os dois recortes não liam como uma peça só.
+            A máscara abaixo dissolve os raios na altura em que a nave começa
+            (49% da altura da igreja), que é onde o mockup também os corta:
+            eles abrem entre as torres e somem antes do corpo do prédio. */}
         <div className="absolute inset-x-0 top-[26.1vh] z-[2] flex justify-center">
-          <img src="/looping/espirito%20santo.png" alt="" className="w-[44.5%] h-auto" />
+          <img
+            src="/looping/espirito%20santo.png"
+            alt=""
+            className="w-[44.5%] h-auto"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to bottom, black 71%, transparent 78%)',
+              maskImage: 'linear-gradient(to bottom, black 71%, transparent 78%)',
+            }}
+          />
         </div>
-        <div className="absolute inset-x-0 top-[37.5vh] z-[3] flex justify-center">
-          <img src="/looping/santuario%20logo.png" alt="Santuário Divino Espírito Santo" className="w-[39.3%] h-auto" />
+        <div className="absolute inset-x-0 top-[36.1vh] z-[3] flex justify-center">
+          <img src="/looping/santuario%20logo.png" alt="Santuário Divino Espírito Santo" className="w-[42.2%] h-auto" />
         </div>
 
         {/* Marca escrita */}
@@ -139,7 +149,7 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
       <div className={`w-full h-full flex flex-col transition-opacity duration-700 ${tela === 'menu' ? 'opacity-100' : 'opacity-0'}`}>
         
 {/* CABEÇALHO COM A FOTO DO SANTUÁRIO */}
-        <div className="h-[35%] sm:h-[45%] shrink-0 w-full bg-gray-300 relative shadow-md overflow-hidden">
+        <div className="h-[35%] sm:h-[39%] shrink-0 w-full bg-gray-300 relative shadow-md overflow-hidden">
           {config?.fotoSantuarioUrl ? (
             <img src={config.fotoSantuarioUrl} alt="Santuário" className="w-full h-full object-cover" />
           ) : (
@@ -149,14 +159,20 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           {/* EFEITO DE LUZ BRANCA (Glow) NO EXTREMO CANTO */}
           {config?.logoSantuarioUrl && (
              // Usamos valores negativos maiores (-top-24 e -right-24) para empurrar o "miolo" da luz para a quina
-             <div className="absolute -top-16 -right-16 sm:-top-24 sm:-right-24 w-48 h-48 sm:w-72 sm:h-72 bg-white/80 blur-[60px] rounded-full z-10 pointer-events-none"></div>
+             <div className="absolute -top-16 -right-16 sm:-top-[13vw] sm:-right-[13vw] w-48 h-48 sm:w-[40vw] sm:h-[40vw] bg-white/80 blur-[60px] rounded-full z-10 pointer-events-none"></div>
           )}
 
           {/* LOGO SOBREPOSTA NO EXTREMO CANTO DIREITO */}
           {config?.logoSantuarioUrl && (
              // Reduzimos de top-10/right-10 para top-4/right-4 para colar na borda
              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
-               <img src={config.logoSantuarioUrl} alt="Logo Santuário" className="h-12 sm:h-20 object-contain drop-shadow-xl" />
+               <img
+                 src={config.logoSantuarioUrl}
+                 alt="Logo Santuário"
+                 // Altura em vw (e não px fixos) para a logo crescer junto com a tela do totem
+                 style={{ height: 'clamp(3rem, 13.5vw, 18rem)' }}
+                 className="object-contain drop-shadow-xl"
+               />
              </div>
           )}
           
@@ -196,7 +212,7 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
                 className="flex flex-col items-center group active:scale-95 transition-transform cursor-pointer"
               >
                 {/* Imagens levemente menores no celular (w-28), mas grandes no Totem (sm:w-40) */}
-                <div className="w-28 h-28 sm:w-40 sm:h-40 flex items-center justify-center mb-2 sm:mb-4 relative transition-transform group-hover:scale-105">
+                <div className="w-28 h-28 sm:w-[17.5vw] sm:h-[17.5vw] flex items-center justify-center mb-2 sm:mb-[1.4vh] relative transition-transform group-hover:scale-105">
                    {item.iconeUrl ? (
                       <img 
                         src={item.iconeUrl} 
@@ -209,8 +225,8 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
                 </div>
                 
                 <span
-                  style={{ fontFamily: 'var(--font-bold)' }}
-                  className="text-[#5A3B2B] text-[10px] sm:text-base tracking-wide text-center uppercase"
+                  style={{ fontFamily: 'var(--font-bold)', fontSize: 'clamp(0.625rem, 2.96vw, 4rem)' }}
+                  className="text-[#5A3B2B] tracking-wide text-center uppercase leading-tight"
                 >
                   {item.titulo}
                 </span>
@@ -220,37 +236,6 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
 
         </div>
       </div>
-    </div>
-  );
-}
-
-// Carrossel de imagens exibido quando o totem fica 30s sem receber toque.
-// Recebe até 8 URLs vindas do Sanity (campo "carrosselInatividade" em configTotem).
-function CarrosselInatividade({ imagens }: { imagens: string[] }) {
-  // O componente só existe na árvore enquanto o carrossel está visível (ver TotemClient acima),
-  // então o índice já nasce em 0 a cada vez que ele aparece — sem precisar de efeito para "resetar".
-  const [indice, setIndice] = useState(0);
-
-  useEffect(() => {
-    if (imagens.length < 2) return;
-    const intervalo = setInterval(() => {
-      setIndice((i) => (i + 1) % imagens.length);
-    }, DURACAO_SLIDE_MS);
-    return () => clearInterval(intervalo);
-  }, [imagens.length]);
-
-  return (
-    <div className="relative w-full h-full">
-      {imagens.map((url, i) => (
-        <img
-          key={url + i}
-          src={url}
-          alt=""
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            i === indice ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-      ))}
     </div>
   );
 }
