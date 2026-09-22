@@ -17,22 +17,30 @@ export default async function CarismaPage() {
     <div className="relative h-screen w-full overflow-hidden bg-[#F7F5EB] select-none">
 
       {/* 1) FOTO (Sanity) — ocupa só a faixa de baixo da tela, para o texto
-             ficar inteiro sobre o creme. O enquadramento (object-position)
-             centraliza a foto nos frades: corta o teto escuro em cima e boa
-             parte do tapete vermelho embaixo. */}
+             ficar inteiro sobre o creme.
+             O arquivo tem 1080x1872 e, medido nele: teto escuro até 57,5%,
+             o banner da Festa da Penha de 57,5% a 68%, os frades de 66% a
+             85% e o tapete vermelho puro de 85,6% até o fim. Como a faixa é
+             mais baixa que o arquivo, o `object-cover` não amplia nada — o
+             que o `object-position` faz é escolher QUAL pedaço aparece. Com
+             94% a janela vai de 44,7% a 97,1% do arquivo, então os frades
+             terminam em 88,2% da TELA e sobra tapete embaixo deles, que é
+             onde os botões pousam (antes, com 72%, a janela parava em 84,3%
+             do arquivo: os frades iam até a borda da tela e os botões caíam
+             em cima deles). */}
       {pagina?.imagemUrl ? (
         <div
-          className="absolute inset-x-0 bottom-0 w-full h-[43vh] overflow-hidden"
+          className="absolute inset-x-0 bottom-0 w-full h-[51vh] overflow-hidden"
           style={{
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 45%)',
-            maskImage: 'linear-gradient(to bottom, transparent 0%, black 45%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 22%)',
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 22%)',
           }}
         >
           <img
             src={pagina.imagemUrl}
             alt=""
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 72%' }}
+            style={{ objectPosition: 'center 94%' }}
           />
         </div>
       ) : (
@@ -56,8 +64,8 @@ export default async function CarismaPage() {
               key={i}
               style={{
                 fontFamily: 'var(--font-regular)',
-                fontSize: 'clamp(0.84rem, 3.5vw, 2.52rem)',
-                marginTop: i === 0 ? 0 : '3.4vh',
+                fontSize: 'clamp(0.77rem, 3.2vw, 2.3rem)',
+                marginTop: i === 0 ? 0 : '2.5vh',
               }}
               className="text-[#241C14] leading-[1.42] max-w-[22em]"
             >
@@ -68,7 +76,7 @@ export default async function CarismaPage() {
       </div>
 
       {/* 4) BOTÕES SOBRE A FOTO */}
-      <NavVoltarInicio hrefVoltar="/sobre-nos" className="absolute inset-x-0 bottom-[5vh] z-20" />
+      <NavVoltarInicio hrefVoltar="/sobre-nos" className="absolute inset-x-0 bottom-[2.7vh] z-20" />
 
     </div>
   );

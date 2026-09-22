@@ -509,6 +509,54 @@ vai até ~93,7% da largura e o do código para em 91%. Isso é geometria interna
 do `NavVoltarInicio`, que é compartilhado por 15 telas — mexer ali mudaria
 todas. Só a posição vertical (que é prop da página) foi ajustada.
 
+## Carisma: foto reenquadrada pelo conteúdo do arquivo (22/09/2026)
+
+No totem instalado os botões Voltar/Início caíam **em cima dos frades**. O
+usuário pediu para subir a foto, "mesmo que apareça o tapete vermelho", e
+deixar igual ao mockup.
+
+**Como o `object-position` foi calculado.** A foto do Sanity tem 1080x1872 e a
+faixa é mais baixa que o arquivo, então o `object-cover` **não amplia nada** —
+o `object-position` só escolhe qual pedaço aparece. Perfilando o arquivo por
+linha (proporção de vermelho / escuro / claro):
+
+| trecho do arquivo | o que é |
+|---|---|
+| 0% – 57,5% | teto escuro do ginásio |
+| 57,5% – 68% | banner branco da Festa da Penha |
+| 66% – 85% | os frades |
+| 85,6% – 100% | tapete vermelho puro |
+
+Com os 72% antigos a janela ia de 40,2% a **84,3%** do arquivo: parava
+exatamente onde o tapete começa, então os frades chegavam à borda de baixo da
+tela e os botões pousavam neles. Com **94%** a janela vai de 44,7% a 97,1% —
+os frades terminam em 88,2% da tela e sobram ~40px de tapete para os botões.
+
+Os outros números, medidos contra o mockup:
+
+| | mockup | ficou |
+|---|---|---|
+| faixa da foto começa | ~48,9% | 49,0% (`h-[43vh]` → `h-[51vh]`) |
+| foto fica opaca | ~60,6% | ~61,8% (máscara `black 45%` → `black 22%`) |
+| texto termina | ~52,3% | 51,2% |
+| linhas por parágrafo | 4 / 5 / 3 | 4 / 5 / 3 |
+| botões | ~91,3%..98,5% | 90,3%..97,3% |
+
+O texto encolheu de 3.5vw para **3.2vw** e o espaço entre parágrafos de 3.4vh
+para 2.5vh. Detalhe útil: **3.4vw já era suficiente** para o terceiro parágrafo
+cair de 4 para 3 linhas (a quebra do mockup) — o resto da redução foi para a
+altura do bloco bater. Os botões foram para `bottom-[2.7vh]`, a mesma altura de
+Nossa História.
+
+**O título ficou onde estava** (6,7vh). O mockup o mostra um pouco mais baixo
+(~9,6vh), mas o pedido foi "subir um pouco tudo" e a diferença está dentro da
+margem de erro da medição do mockup — não faria sentido descer o único
+elemento que o usuário não reclamou.
+
+Conferido de passagem: esta foto **não** tem o esmaecido embutido no alfa (o
+topo do arquivo é escuro opaco, não transparente), então a máscara CSS não
+está duplicando degradê nenhum — diferente do que acontecia em Confissões.
+
 ## Pendências / próximos passos
 
 1. **Outras opções do menu principal ainda sem página.** A lista real do
