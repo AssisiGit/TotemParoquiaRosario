@@ -413,6 +413,9 @@ Pedidos do usuário, tela por tela, cada um verificado com captura em 1080x1920
   20.3vh para 13vh, cartão de texto de `object-cover` para `object-fill`
   terminando em `bottom-[12.5vh]` — assim os quatro cantos arredondados do
   recorte aparecem — e corpo de 2.55vw para 2.95vw.
+  **Revertido em 22/09/2026** (ver "Nossa História: calibragem pelas torres"
+  abaixo): os `-5.2vh` cortavam a torre na borda de cima e o título a 13vh
+  ficava abaixo do mockup.
 - **Carisma** — a foto era tela cheia e o terceiro parágrafo caía em cima dela.
   Virou faixa de 43vh no rodapé, com `object-position: center 72%` (corta o teto
   escuro e quase todo o tapete vermelho) e máscara de degradê nos 45% de cima.
@@ -442,6 +445,69 @@ google-chrome-stable --headless=new --disable-gpu --hide-scrollbars \
 Para comparar antes/depois e inspecionar detalhe (o ImageMagick também já está
 na máquina): `magick antes.png depois.png +append -resize 700x comp.png` e
 `magick tela.png -crop 320x180+0+640 +repage -resize 640x zoom.png`.
+
+## Nossa História: calibragem pelas torres (22/09/2026)
+
+O usuário fotografou o totem instalado ao lado do mockup: a ilustração do
+santuário estava cortada na borda de cima e o título "Nossa História" mais
+baixo do que no design.
+
+**A régua.** `public/nossahistoria/fundo.png` (1080x1920, 1:1 com a tela) tem
+duas torres com pontas em alturas diferentes: a da esquerda (x 542..765) em
+y=47 (**2,45%** da tela) e a da direita (x 817..1007) em y=171 (**8,91%**). A
+distância entre elas é fixa, então dá para achar as duas no mockup e resolver
+o deslocamento sem chutar posição absoluta — foi assim que os números abaixo
+saíram, e as duas torres deram o mesmo resultado.
+
+- Ilustração: `translateY(-5.2vh)` → **`translateY(4.2vh)`**. Com -5.2vh a
+  ponta caía em y=-53 (cortada); agora cai em y=128, **6,65%** da tela, que é
+  onde o mockup a coloca, com creme acima.
+- Título: `top-[13vh]` → **`top-[8.4vh]`**, que é o valor original de antes da
+  rodada de 15/09 — aquela rodada desceu o título para 20.3vh "junto" com a
+  ilustração, e isso é que estava errado.
+
+Medido depois: título em 8,6%→16,9%, ilustração começando em 4,2%, cartão
+36%→87,5%, 0px de rolagem.
+
+**Recalibragem do resto da tela** (mesmo dia, a pedido do usuário: "a ideia é
+ficar igual mesmo"). O que faltava vinha todo junto — margem, tamanho do
+título, coluna de texto e posição do cartão se puxam. Valores finais, com a
+medição do mockup ao lado:
+
+| | mockup | ficou |
+|---|---|---|
+| margem lateral | ~7% | 7% (era 9%) |
+| título (x) | 7,3%..47,6% | 7,0%..47,6% |
+| título (y) | ~8,3%..20,7% | 8,4%..20,2% |
+| cartão (x) | 6,8%..93,4% | 7,0%..93,0% |
+| cartão (y) | ~42,4%..89,2% | 42,4%..89,2% |
+| coluna de texto | ~72% da largura | 72,0% |
+| linhas por parágrafo | 5 / 5 / 6 | 5 / 5 / 6 |
+| botões (y) | ~90,2%..97,3% | 90,3%..97,3% |
+
+Como o título foi medido sem depender da escala da imagem: **largura do título
+dividida pela largura do cartão** (0,466 no mockup contra 0,407 no código).
+Com o cartão já em 86% de largura, isso dá 8.3vw → **10vw** — e esse mesmo
+número faz a altura do bloco (2 linhas) bater com o mockup, o que serve de
+segunda confirmação.
+
+**A pegadinha da coluna de texto:** o `<p>` tem `max-w-[26em]`, e `em` escala
+junto com a fonte — então aumentar o corpo do texto **não muda a quebra de
+linha**. Para chegar nas 16 linhas do mockup o que muda é o `max-w`
+(26em → **24em**); a fonte foi de 2.95vw para 3vw só para casar a largura
+da coluna com os 72% do mockup.
+
+Ajustes finos que sobraram: `paddingTop` do texto 3.1vh → 2.3vh (a 3.7vh o
+texto encostava no fundo do cartão, 7px de sobra; agora são 44px em cima e
+34px embaixo, a mesma proporção do mockup, que tem mais respiro em cima que
+embaixo), espaço entre parágrafos 3vh → 2.2vh (no mockup é ~1 linha) e a barra
+Voltar/Início de `bottom-[5vh]` para `bottom-[2.7vh]` — a 5vh ela invadia 1,2%
+do cartão; agora sobram 21px entre os dois, como no mockup.
+
+**Uma diferença que ficou de fora de propósito:** o botão "Início" do mockup
+vai até ~93,7% da largura e o do código para em 91%. Isso é geometria interna
+do `NavVoltarInicio`, que é compartilhado por 15 telas — mexer ali mudaria
+todas. Só a posição vertical (que é prop da página) foi ajustada.
 
 ## Pendências / próximos passos
 
