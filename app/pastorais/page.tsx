@@ -22,7 +22,7 @@ export default async function PastoraisPage() {
           do que cabe na tela — o degradê no topo faz o card sumir antes de
           encostar no título. */}
       <div
-        className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-[2.5vh] pt-[3.6vh] pb-[1vh] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-[2.5vh] pt-[3.6vh] pb-[1vh]"
         style={{
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, black 3vh)',
           maskImage: 'linear-gradient(to bottom, transparent 0, black 3vh)',

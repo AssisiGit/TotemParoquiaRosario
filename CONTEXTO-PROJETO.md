@@ -138,6 +138,38 @@ Como isso é garantido no código:
   `justify-evenly` numa caixa que rola, o topo da lista ficaria fora do alcance
   do dedo).
 
+### Barra de rolagem: escondida no projeto inteiro (22/09/2026)
+
+Na TV instalada apareceu a barra cinza do navegador no lado direito do Menu
+Inicial (o único miolo com `overflow-y-auto` fora das listas). Numa tela de
+toque ela não serve para nada e ainda come largura do layout.
+
+A regra fica num lugar só, no fim do `app/globals.css`, e vale para todo
+elemento da página (`scrollbar-width: none` + `::-webkit-scrollbar { display:
+none }`). **Rolar com o dedo continua funcionando** — some só a barra, que é
+justamente o que as listas alimentadas pela secretaria precisam.
+
+Duas coisas importantes:
+
+- **Não repetir isso nas páginas.** `/avisos`, `/eventos` e `/pastorais`
+  carregavam `[scrollbar-width:none] [&::-webkit-scrollbar]:hidden` inline;
+  foi removido, porque agora a regra global já cobre.
+- **O Studio é exceção.** `/studio` é usado no computador, com mouse, e sem
+  barra fica ruim de editar. O seletor global é
+  `html:not(:has(.studio-sanity)) *`, e o `app/studio/[[...tool]]/page.tsx`
+  envolve o `<NextStudio>` numa `div.studio-sanity`. A exclusão é pelo
+  documento inteiro, e não só por dentro da marca, porque o Studio abre modais
+  em portal, fora da árvore do componente. Verificado: na `/studio` uma caixa
+  de teste ganha barra de 15px; em qualquer rota do totem ela sai com 0px.
+
+**Atenção — a barra era sintoma, não a doença.** Ela só aparecia porque o
+navegador na TV não está em tela cheia (barra do Windows + barra do navegador
+comem altura). Escondê-la resolve o visual, mas o conteúdo continua sendo
+cortado sem aviso nenhum: medido em 1080x1650, o Menu Inicial transborda 136px
+e a última fileira de ícones ("Redes Sociais" e "Onde Estamos") perde a segunda
+linha do rótulo. O conserto de verdade é o modo quiosque / tela cheia (ver
+"Configuração recomendada do aparelho" acima).
+
 Medido em 19/09/2026, viewport 1080x1920: **todas as 15 rotas ficaram em 0px de
 rolagem**. `/sobre-nos` (estourava 49px) e `/sobre-nos/fraternidade` (118px)
 foram corrigidas nessa data — eram as duas únicas que vazavam.

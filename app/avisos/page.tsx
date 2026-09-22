@@ -34,7 +34,7 @@ export default async function AvisosPage() {
 
       {/* Cartões. Cada um cresce conforme o texto (o retângulo bege é esticado
           junto), e a lista rola se a secretaria cadastrar mais do que cabe. */}
-      <div className="relative z-[2] flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-[1.8vh] pt-[7vh] pb-[1vh] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="relative z-[2] flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-[1.8vh] pt-[7vh] pb-[1vh]">
         {avisos.length === 0 && (
           <div className="relative w-[74.2%] flex-none min-h-[10.2vh] flex items-center justify-center px-[5%] py-[2.1vh]">
             <img

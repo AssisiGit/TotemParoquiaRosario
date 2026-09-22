@@ -28,7 +28,7 @@ export default async function EventosPage() {
 
       {/* Lista de eventos. Rola sozinha se a secretaria cadastrar mais eventos
           do que cabe no espaço acima da foto. */}
-      <div className="relative z-[2] flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-[4vh] pt-[3.4vh] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="relative z-[2] flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-[4vh] pt-[3.4vh]">
         {eventos.length === 0 && (
           <div
             style={{ fontFamily: 'var(--font-regular)', fontSize: 'clamp(0.9rem, 4vw, 2.9rem)' }}
