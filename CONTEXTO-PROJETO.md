@@ -209,16 +209,17 @@ Dois pontos que dependem de como o totem é ligado (ver "Itens em aberto"):
    limites conserta o 4K sem mexer em nada do design atual; só 4 precisam de
    análise caso a caso.
 
-## Protetor de tela / inatividade (30s)
+## Protetor de tela / inatividade (20s)
 
-Depois de **30 segundos sem toque** o totem sai da tela atual e passa o
+Depois de **20 segundos sem toque** o totem sai da tela atual e passa o
 **carrossel de avisos** cadastrado no Sanity (`configTotem` → "Carrossel de
-Inatividade", até 8 imagens, 6s cada). Isso vale **em todas as telas**, não só
-no menu inicial. Quem cuida disso:
+Inatividade", sem limite de quantidade, 20s cada). Isso vale **em todas as
+telas**, não só no menu inicial. Quem cuida disso:
 
 - `app/_components/CarrosselInatividade.tsx` — o carrossel em si (fade de 1s
-  entre as imagens) e as duas constantes: `TEMPO_INATIVIDADE_MS` (30s) e
-  `DURACAO_SLIDE_MS` (6s). Mexer no tempo é mexer aqui, num lugar só.
+  entre as imagens) e as duas constantes: `TEMPO_INATIVIDADE_MS` (20s) e
+  `DURACAO_SLIDE_MS` (20s). Mexer no tempo é mexer aqui, num lugar só.
+  É também onde fica a **casinha de indicação** no rodapé (ver abaixo).
 - `app/_components/ProtetorDeTela.tsx` — montado no `app/layout.tsx`, ou seja,
   vale para o projeto inteiro. Nas páginas internas (Missas, Avisos, Sobre
   Nós...) ele conta os 30s e sobrepõe o carrossel em `fixed inset-0 z-[100]`;
@@ -557,6 +558,108 @@ Conferido de passagem: esta foto **não** tem o esmaecido embutido no alfa (o
 topo do arquivo é escuro opaco, não transparente), então a máscara CSS não
 está duplicando degradê nenhum — diferente do que acontecia em Confissões.
 
+## Looping: o encaixe do brasão, resolvido de verdade (22/09/2026)
+
+Duas tentativas anteriores (19 e 20/09) mexeram em posição e tamanho e não
+resolveram. **A causa nunca foi geometria.**
+
+`santuario logo.png` é só o TRAÇO da igreja — 68% do arquivo é transparente,
+as paredes são vazadas. Empilhado sobre os raios, o bege do arquivo de trás
+aparecia **através** das paredes. No mockup a igreja é sólida e tapa os raios,
+e é isso que faz as duas peças lerem como uma só.
+
+Pior: a "correção" de 20/09 (máscara cortando os raios em 71–78%) apagava
+justamente a parte de baixo do `espirito santo.png`, que é **o arco bege que
+no mockup fica atrás da igreja**. Sem o arco o brasão vira um estrelado solto,
+que foi exatamente a reclamação. Renderizando o arquivo sozinho sobre fundo
+colorido dá para ver o arco e a pomba — vale sempre fazer isso antes de
+concluir qualquer coisa sobre um recorte.
+
+**Como ficou:** três camadas, sem máscara nenhuma.
+
+1. `espirito santo.png` inteiro (z-2) — a pomba, as faixas douradas e o arco
+2. `santuario logo preenchido.png` (z-3) — a silhueta da igreja em `#F7F5EB`
+3. `santuario logo.png` (z-4) — o traço por cima
+
+O arquivo (2) **não é arte nova**: é a silhueta do próprio `santuario logo.png`
+com o miolo fechado, pintada na cor de fundo. O comando que o gerou está no
+comentário em `app/TotemClient.tsx` e é reproduzível. Se o designer mandar a
+versão da igreja já com o fundo creme embutido, troque por ela e apague a
+camada (2). O `Close Disk:10` antes do flood-fill é necessário: sem ele a asa
+direita fica vazada, porque o contorno dela tem vãos.
+
+Geometria (não mudou): raios `w-[44.5%]` em `top-[26.1vh]`, igreja `w-[42.2%]`
+em `top-[36.1vh]` — as duas camadas da igreja usam exatamente os mesmos
+valores, senão o preenchimento escapa por baixo do traço.
+
+### `sublinhado.png` tem lugar sim
+
+A lente dourada estava na lista de "assets sem uso" com a observação de que
+"no mockup não aparece nenhuma lente dourada". **Isso estava errado**: no
+mockup ela fecha a marca, logo abaixo de "VILA VELHA | ES". Entrou como quarta
+imagem do bloco da marca escrita, `w-[33%]` com `mt-[1.8vh]` — medido em
+73,4%..74,1% da altura, contra ~73,4%..74,4% do mockup.
+
+Continuam sem uso: `pontinhos.png` e `vila velha.png` — os dois já vêm
+embutidos e completos em `vila velha espirito santo.png`.
+
+## Carrossel de inatividade: casinha, sem limite e 20s (22/09/2026)
+
+Três pedidos do usuário, todos no carrossel que roda depois de 20s sem toque:
+
+1. **Casinha de indicação.** No rodapé, centralizada, para a pessoa entender
+   que é só tocar para sair do carrossel. Reaproveita os recortes reais:
+   `Retangulo da setinha.png` (o botão redondo do "Voltar") com o
+   `casa.png` dentro, na mesma altura dos botões das telas internas
+   (`clamp(3.1rem, 12.5vw, 8.6rem)`), em `bottom-[4vh]`, com `animate-pulse`
+   como o "Toque para Iniciar".
+
+   **`pointer-events-none` é de propósito, não esquecimento.** Quem trata o
+   toque é o listener no `document` (TotemClient em `/`, ProtetorDeTela nas
+   demais rotas). Se a casinha fosse um `<Link>`, o toque seria tratado duas
+   vezes e o totem navegaria duas vezes. Ela é indicação visual, só isso.
+
+   Como fica dentro do `CarrosselInatividade`, vale nos dois caminhos (menu
+   inicial e páginas internas) de uma vez só.
+
+2. **Sem limite de imagens.** Saiu o `Rule.max(8)` do `configTotem`.
+
+3. **20 segundos por imagem** (era 6): `DURACAO_SLIDE_MS`.
+
+Logo depois o usuário pediu para **padronizar**: o tempo de inatividade também
+foi de 30s para 20s (`TEMPO_INATIVIDADE_MS`), então hoje as duas constantes
+valem 20s e o totem inteiro tem o mesmo ritmo. É uma constante só, importada
+por `TotemClient` e `ProtetorDeTela` — não existe outro timer de inatividade
+no projeto. Conferido renderizando o menu parado: aos 15s ainda é o Menu
+Inicial, aos 24s já é o carrossel.
+
+Cuidado ao mexer: além da constante, o número aparece por escrito na descrição
+do campo no Sanity (`configTotem`), que é o texto que a secretaria lê no
+Studio. Os dois precisam andar juntos.
+
+### O preço do "ilimitado" (e como foi resolvido)
+
+Todas as imagens ficam montadas ao mesmo tempo no DOM — é isso que faz o fade
+funcionar. Sem limite de quantidade, e com fotos vindo direto do celular, isso
+vira um problema real no mini PC do totem. Por isso o `getConfigTotem` agora
+pede ao CDN do Sanity a versão dimensionada, e não o arquivo original:
+
+    ?w=2160&q=75&fit=max&auto=format
+
+- **2160 e não 1080**: a configuração recomendada é a TV em 4K com escala de
+  200%, então o navegador enxerga 1080 mas desenha em 2160 reais (DPR 2).
+- **`fit=max` é obrigatório**: sem ele o CDN AMPLIA imagens menores que 2160 e
+  o arquivo fica **maior** que o original sem ganhar nitidez. Medido na foto
+  já cadastrada (899x1599): 144KB de origem viravam 203KB sem `fit=max`, e
+  caem para 82KB com ele.
+
+### Atenção ao testar
+
+Hoje há **1 imagem só** cadastrada no carrossel. Com menos de 2 imagens o
+`setInterval` nem chega a ser criado (`if (imagens.length < 2) return`), ou
+seja, o carrossel mostra uma foto parada e o tempo de 20s não tem efeito
+visível. Para ver a troca acontecendo é preciso cadastrar pelo menos duas.
+
 ## Pendências / próximos passos
 
 1. **Outras opções do menu principal ainda sem página.** A lista real do
@@ -639,12 +742,13 @@ Ainda diferente do mockup (não corrigido, precisa de decisão):
 
 ## Itens em aberto sem resposta do usuário (não decidir sozinho)
 
-- `public/looping/sublinhado.png` (lente dourada), `pontinhos.png` e
-  `vila velha.png` ficaram **sem uso**: a linha "· · · VILA VELHA | ES · · ·"
-  já vem pronta e completa em `vila velha espirito santo.png`, e no mockup não
-  aparece nenhuma lente dourada. O usuário avisou que não tinha todos os assets
-  desta tela, então pode ser que falte peça ou que essas sejam sobras — vale
-  confirmar antes de apagar ou de inventar um lugar para elas.
+- ~~`public/looping/sublinhado.png`~~ — **resolvido em 22/09/2026**: a lente
+  dourada aparece sim no mockup, fechando a marca abaixo de "VILA VELHA | ES".
+  Já está em uso (ver "Looping: o encaixe do brasão" acima).
+  `pontinhos.png` e `vila velha.png` seguem **sem uso**: a linha
+  "· · · VILA VELHA | ES · · ·" já vem pronta e completa em
+  `vila velha espirito santo.png`. Provavelmente são sobras, mas confirmar
+  antes de apagar.
 
 - `public/fraternidade/forma radial.png` — **resolvido em 15/09/2026**: é o
   raio creme (`#F8F5EB`) que aparece meio cortado pela borda no cabeçalho dos

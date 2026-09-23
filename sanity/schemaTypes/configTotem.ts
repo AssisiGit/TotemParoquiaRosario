@@ -28,10 +28,9 @@ export default defineType({
     defineField({
       name: 'carrosselInatividade',
       title: 'Carrossel de Inatividade',
-      description: 'Imagens exibidas em rotação quando o totem fica 30 segundos sem receber toque. Máximo de 8 imagens. Arraste para reordenar. Se nenhuma imagem for adicionada, o totem mostra apenas a tela "Toque para Iniciar".',
+      description: 'Imagens exibidas em rotação quando o totem fica 20 segundos sem receber toque. Cada imagem fica 20 segundos na tela. Pode adicionar quantas quiser, sem limite. Arraste para reordenar. Se nenhuma imagem for adicionada, o totem mostra apenas a tela "Toque para Iniciar".',
       type: 'array',
       of: [{ type: 'image', options: { hotspot: true } }],
-      validation: (Rule) => Rule.max(8),
     }),
   ],
 });

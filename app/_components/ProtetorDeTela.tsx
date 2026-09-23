@@ -7,7 +7,7 @@ import CarrosselInatividade, { TEMPO_INATIVIDADE_MS } from './CarrosselInativida
 
 // Protetor de tela do totem, montado no layout — ou seja, vale em TODAS as
 // páginas internas (Missas, Avisos, Sobre Nós, ...). Se o visitante sair do
-// totem no meio da navegação, depois de 30s sem toque a tela passa a exibir
+// totem no meio da navegação, depois de 20s sem toque a tela passa a exibir
 // o carrossel de avisos cadastrado no Sanity. O toque seguinte devolve o
 // totem para a tela inicial ("Toque para Iniciar"), pronto para a próxima
 // pessoa.

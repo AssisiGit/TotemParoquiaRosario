@@ -23,7 +23,7 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
   const carrosselUrls = config?.carrosselUrls ?? [];
   const temCarrossel = carrosselUrls.length > 0;
 
-  // 'menu' (interativo) -> 30s sem toque -> 'carrossel' (se houver imagens) ou 'repouso'
+  // 'menu' (interativo) -> 20s sem toque -> 'carrossel' (se houver imagens) ou 'repouso'
   // 'carrossel' -> toque -> 'repouso' (Toque para Iniciar)
   // 'repouso' -> toque -> 'menu'
   const [tela, setTela] = useState<Tela>(veioDoInicio ? 'menu' : 'repouso');
@@ -89,25 +89,47 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           Seja bem-vindo(a) ao
         </div>
 
-        {/* Brasão: pomba com raios atrás, igreja na frente.
-            `santuario logo.png` é só o traço da igreja — 68% do arquivo é
-            transparente (as paredes são vazadas), então os raios apareciam
-            atravessando o prédio e os dois recortes não liam como uma peça só.
-            A máscara abaixo dissolve os raios na altura em que a nave começa
-            (49% da altura da igreja), que é onde o mockup também os corta:
-            eles abrem entre as torres e somem antes do corpo do prédio. */}
+        {/* Brasão: raios atrás, igreja na frente — três camadas empilhadas.
+
+            O que quebrava o encaixe: `santuario logo.png` é SÓ o traço da
+            igreja (68% do arquivo é transparente — as paredes são vazadas),
+            então os raios apareciam atravessando o prédio. No mockup a igreja
+            é sólida e tapa os raios, e é isso que faz as duas peças lerem
+            como uma coisa só.
+
+            A correção anterior (uma máscara cortando os raios) atacava o
+            sintoma errado: ela apagava a parte de baixo do arquivo dos raios,
+            que é justamente o arco creme/bege que no mockup fica ATRÁS da
+            igreja. Sem esse arco o brasão vira um estrelado solto.
+
+            Agora: raios inteiros (sem máscara) + preenchimento creme +
+            traço da igreja por cima. */}
         <div className="absolute inset-x-0 top-[26.1vh] z-[2] flex justify-center">
-          <img
-            src="/looping/espirito%20santo.png"
-            alt=""
-            className="w-[44.5%] h-auto"
-            style={{
-              WebkitMaskImage: 'linear-gradient(to bottom, black 71%, transparent 78%)',
-              maskImage: 'linear-gradient(to bottom, black 71%, transparent 78%)',
-            }}
-          />
+          <img src="/looping/espirito%20santo.png" alt="" className="w-[44.5%] h-auto" />
         </div>
+
+        {/* Preenchimento creme da igreja. Este arquivo NÃO é arte nova: é a
+            silhueta do próprio `santuario logo.png`, com o miolo fechado,
+            pintada na cor de fundo (#F7F5EB). Foi gerado assim, e dá para
+            refazer a qualquer momento:
+
+              magick "santuario logo.png" -alpha extract -threshold 40% m.png
+              magick m.png -morphology Close Disk:10 f.png
+              magick f.png -bordercolor black -border 1 -fill white \
+                     -draw 'color 0,0 floodfill' -shave 1x1 o.png
+              magick f.png o.png -compose Difference -composite -negate \
+                     -threshold 50% d.png
+              magick m.png d.png -compose Lighten -composite s.png
+              magick -size 846x726 xc:"#F7F5EB" s.png -alpha off \
+                     -compose CopyOpacity -composite "santuario logo preenchido.png"
+
+            Se o designer mandar a versão da igreja já com o fundo creme
+            embutido, é só trocar por ela e apagar esta camada. */}
         <div className="absolute inset-x-0 top-[36.1vh] z-[3] flex justify-center">
+          <img src="/looping/santuario%20logo%20preenchido.png" alt="" className="w-[42.2%] h-auto" />
+        </div>
+
+        <div className="absolute inset-x-0 top-[36.1vh] z-[4] flex justify-center">
           <img src="/looping/santuario%20logo.png" alt="Santuário Divino Espírito Santo" className="w-[42.2%] h-auto" />
         </div>
 
@@ -116,6 +138,11 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           <img src="/looping/santuario.png" alt="" className="w-[64.4%] h-auto" />
           <img src="/looping/divino%20espirito%20santo.png" alt="" className="w-[63.2%] h-auto mt-[0.3vh]" />
           <img src="/looping/vila%20velha%20espirito%20santo.png" alt="" className="w-[50.4%] h-auto mt-[0.35vh]" />
+          {/* Lente dourada (`sublinhado.png`). Ela estava sem uso no projeto:
+              numa auditoria anterior eu concluí que não aparecia no mockup, e
+              estava errado — no mockup ela fecha a marca, logo abaixo de
+              "VILA VELHA | ES", em ~73,4% da altura da tela. */}
+          <img src="/looping/sublinhado.png" alt="" className="w-[33%] h-auto mt-[1.8vh]" />
         </div>
 
         {/* Chamada para o toque. O pulsar fica só aqui, para o brasão não piscar. */}
