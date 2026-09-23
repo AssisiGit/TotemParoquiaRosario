@@ -363,11 +363,10 @@ Pedidos do usuário, tela por tela, cada um verificado com captura em 1080x1920
   raios também tinha encostado o "Seja bem-vindo(a)
   ao" na auréola da pomba (folga de 38px); com eles de volta em 26.1vh a folga
   é de 123px. O par TAU→título (90px) sempre bateu com o mockup (~89px).
-  Atenção ao investigar: `espirito santo.png` tem um recorte vazado no formato
-  de uma igreja, mas ele é **vestigial** — é uma silhueta simplificada, de
-  outra versão da logo, e não corresponde ao `santuario logo.png` atual (o vão
-  tem 346px de largura num arquivo de 924, e a igreja é desenhada com 424px de
-  816 equivalentes). Não dá para usar esse vão para alinhar os dois.
+  ~~Atenção ao investigar: o recorte vazado em `espirito santo.png` é
+  vestigial.~~ **Errado** — o vão é o gabarito exato da igreja, a 120%. Tudo
+  o que está neste item sobre tamanho e posição foi substituído em 23/09/2026
+  (ver "O vão era o gabarito" mais abaixo).
 - **Menu Inicial** — foto do santuário de 45vh para 39vh (o menu sobe até a
   grade da foto), ícones de `sm:w-40` (160px fixos) para `sm:w-[17.5vw]`
   (189px no totem, e proporcionais em qualquer tela) e rótulos no dobro do
@@ -561,7 +560,8 @@ está duplicando degradê nenhum — diferente do que acontecia em Confissões.
 ## Looping: o encaixe do brasão, resolvido de verdade (22/09/2026)
 
 Duas tentativas anteriores (19 e 20/09) mexeram em posição e tamanho e não
-resolveram. **A causa nunca foi geometria.**
+resolveram. ~~**A causa nunca foi geometria.**~~ Era metade da causa: em
+23/09 apareceu a outra metade, a escala (ver "O vão era o gabarito" abaixo).
 
 `santuario logo.png` é só o TRAÇO da igreja — 68% do arquivo é transparente,
 as paredes são vazadas. Empilhado sobre os raios, o bege do arquivo de trás
@@ -588,9 +588,86 @@ versão da igreja já com o fundo creme embutido, troque por ela e apague a
 camada (2). O `Close Disk:10` antes do flood-fill é necessário: sem ele a asa
 direita fica vazada, porque o contorno dela tem vãos.
 
-Geometria (não mudou): raios `w-[44.5%]` em `top-[26.1vh]`, igreja `w-[42.2%]`
-em `top-[36.1vh]` — as duas camadas da igreja usam exatamente os mesmos
-valores, senão o preenchimento escapa por baixo do traço.
+A geometria desta data (raios `w-[44.5%]` em `top-[26.1vh]`, igreja
+`w-[42.2%]` em `top-[36.1vh]`) **também estava errada** — ver logo abaixo.
+
+### O vão era o gabarito (23/09/2026)
+
+O usuário mandou de novo o mockup ao lado do totem: com o preenchimento a
+igreja já tapava os raios, mas as peças ainda não "encaixavam". Faltava a
+metade da causa que a seção acima descartou: **a escala**.
+
+Renderizando `espirito santo.png` sobre fundo azul, a parte de baixo dele tem
+um vão com o contorno da igreja. As notas antigas o chamavam de "vestigial",
+de outra versão da logo. Não é: com a igreja desenhada **a 120% da escala
+dos raios**, o contorno dela entra no vão com uma folga **constante de ~20px**
+(do arquivo dos raios) em volta da torre da esquerda e da ala da direita. A
+inclinação do telhado da ala e a da borda de baixo dos raios são a mesma
+(0,34 contra 0,34). O designer desenhou as duas peças para se encaixarem
+nessa escala e em mais nenhuma. No código a igreja estava a 104% (~14%
+pequena demais), e por isso nenhum ajuste de posição resolvia.
+
+Os mesmos números saem do mockup, medidos à parte: igreja com 846 px de
+arquivo em 166,7 px de mockup contra 924 px dos raios em 152, que dá 1,20. A
+igreja começa 94px (do arquivo dos raios) à esquerda deles e 552px abaixo.
+Resultado no mockup: a torre da esquerda passa para fora do arco, e a ponta
+direita da ala fica rente à borda direita dele.
+
+**Como ficou:** a igreja mora **dentro da caixa dos raios**, com tudo em % da
+caixa: `left: -10.2%`, `width: 109.9%` (da largura) e `top: 52.8%` (da
+altura, que é a altura do `<img>` dos raios). As duas peças escalam juntas e
+não se desencaixam em proporção de tela nenhuma. Antes cada uma tinha `top`
+em vh e largura em %, e fora de 9:16 elas escorregavam uma sobre a outra.
+A caixa: `left-[33%] top-[24.6vh] w-[36.6%]`.
+
+- **`max-w-none` nas duas camadas da igreja é obrigatório.** Ela é mais larga
+  que a caixa, e o `max-width: 100%` que o Tailwind põe em todo `<img>` a
+  encolheria para 100% sem erro nenhum.
+- **O brasão não é centrado de propósito.** No mockup a pomba fica ~14px à
+  direita do eixo da tela (TAU, título e marca estão todos em 207,5 de 415;
+  a auréola em 212,7), e a igreja ~7px à esquerda. Por isso é `left-[33%]` e
+  não `justify-center`.
+- Medido em 1080x1920, com o mockup convertido para 1080: brasão em
+  316..750 × 473..1081, contra 315..749 × 477..1076 no mockup (1 px do mockup
+  = 2,6 px do totem). Traço da igreja em 318..748, contra 317..747.
+
+### TAU e marca escrita (23/09/2026, mesma rodada)
+
+Pedido logo em seguida. Primeiro uma lição de medição: a primeira lista
+(feita com janelas fixas sobre o render nítido) dizia "lente 11% mais
+estreita". **Estava errado**: a janela da lente pegava um pedaço da linha
+VILA VELHA. Comparando do jeito certo, a lente já tinha o tamanho do mockup.
+Do jeito certo é assim:
+
+- reduzir o render para a resolução do mockup, para os dois terem o mesmo
+  borrado;
+- escala **uniforme** pela largura (1080/415), porque a altura do brasão,
+  que é fixa pelos arquivos, só bate assim. O mockup tem ~6 linhas a mais
+  que 9:16, e 3 delas foram postas no topo para ancorar no brasão;
+- recortar por faixas separadas por linhas em branco, não por janela fixa.
+
+Valores novos:
+
+| | antes | agora |
+|---|---|---|
+| TAU | 5.2vw, top 9.3vh | **7.6vw**, top **8.1vh** |
+| marca (bloco) | top 58.7vh | top **56.8vh** |
+| SANTUÁRIO | 64.4% | **66.6%** |
+| DIVINO ESPÍRITO SANTO | 63.2%, mt 0.3vh | 63.2%, mt **0.6vh** |
+| VILA VELHA \| ES | 50.4%, mt 0.35vh | **51.6%**, mt **0.87vh**, `-translate-x-[1.4vw]` |
+| lente | 33%, mt 1.8vh | 33%, mt **1.07vh**, `-translate-x-[0.6vw]` |
+
+Na resolução do mockup, os seis elementos (TAU, acento, SANTUÁRIO, DIVINO,
+VILA, lente) caem **no mesmo pixel** do mockup, com no máximo 1 de diferença.
+Os dois `translate-x` reproduzem o mockup, onde a linha VILA VELHA fica ~15px
+à esquerda do eixo e a lente ~6px. Se quiserem centralizado, é só tirar.
+
+**Ainda diferente, fora desses pedidos** (medido e não mexido):
+"Seja bem-vindo(a) ao" ~21px mais baixo e ~6% menor; "Toque para Iniciar"
+~10px mais baixo e ~3% menor; e o círculo do toque é outro desenho — no
+mockup é um anel fino e claro de ~98px com um ponto dourado grande (~65px),
+no código um anel dourado grosso de 76px com ponto de 30px. As cores dos
+textos batem.
 
 ### `sublinhado.png` tem lugar sim
 

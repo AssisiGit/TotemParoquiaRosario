@@ -78,8 +78,9 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           className="absolute left-1/2 -translate-x-1/2 top-[1.2vh] w-full h-auto z-0 pointer-events-none"
         />
 
-        <div className="absolute inset-x-0 top-[9.3vh] z-[2] flex justify-center">
-          <img src="/dizimo/TAU.png" alt="" style={{ width: '5.2vw' }} className="h-auto" />
+        {/* TAU: 7.6vw (~82px) no mockup — estava 5.2vw, ~30% menor */}
+        <div className="absolute inset-x-0 top-[8.1vh] z-[2] flex justify-center">
+          <img src="/dizimo/TAU.png" alt="" style={{ width: '7.6vw' }} className="h-auto" />
         </div>
 
         <div
@@ -91,27 +92,35 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
 
         {/* Brasão: raios atrás, igreja na frente — três camadas empilhadas.
 
-            O que quebrava o encaixe: `santuario logo.png` é SÓ o traço da
-            igreja (68% do arquivo é transparente — as paredes são vazadas),
-            então os raios apareciam atravessando o prédio. No mockup a igreja
-            é sólida e tapa os raios, e é isso que faz as duas peças lerem
-            como uma coisa só.
+            Os dois recortes foram desenhados para se encaixar: a parte de
+            baixo de `espirito santo.png` tem um vão no formato exato da
+            igreja, com uma folga uniforme em volta. O encaixe só acontece numa escala e numa
+            posição: a igreja desenhada a 120% da escala dos raios, 94px (do
+            arquivo dos raios) para a esquerda e 552px para baixo. Tirado do
+            mockup e conferido pela folga, que dá ~20px constantes em volta
+            da torre da esquerda e da ala da direita.
 
-            A correção anterior (uma máscara cortando os raios) atacava o
-            sintoma errado: ela apagava a parte de baixo do arquivo dos raios,
-            que é justamente o arco creme/bege que no mockup fica ATRÁS da
-            igreja. Sem esse arco o brasão vira um estrelado solto.
+            Por isso a igreja fica DENTRO da caixa dos raios, com tudo em %
+            da própria caixa (left/width da largura, top da altura): as duas
+            peças escalam juntas e não se desencaixam em tela nenhuma. Antes
+            cada uma tinha o seu `top` em vh e a sua largura em %, a igreja
+            estava 13% pequena demais em relação aos raios e nenhum ajuste
+            de posição resolvia.
 
-            Agora: raios inteiros (sem máscara) + preenchimento creme +
-            traço da igreja por cima. */}
-        <div className="absolute inset-x-0 top-[26.1vh] z-[2] flex justify-center">
-          <img src="/looping/espirito%20santo.png" alt="" className="w-[44.5%] h-auto" />
-        </div>
+            Os números de fora vêm do mockup: raios com 36,6% da largura da
+            tela, começando em 24,6vh. No mockup o brasão não fica centrado
+            pela caixa: a pomba está ~14px à direita do eixo da tela (e a
+            igreja ~7px à esquerda), por isso `left-[33%]` e não um
+            `justify-center`. */}
+        <div className="absolute left-[33%] top-[24.6vh] w-[36.6%] z-[2]">
+          <img src="/looping/espirito%20santo.png" alt="" className="block w-full h-auto" />
 
-        {/* Preenchimento creme da igreja. Este arquivo NÃO é arte nova: é a
-            silhueta do próprio `santuario logo.png`, com o miolo fechado,
-            pintada na cor de fundo (#F7F5EB). Foi gerado assim, e dá para
-            refazer a qualquer momento:
+          {/* Preenchimento creme da igreja: as paredes do traço são vazadas
+              e sem isso o traço claro do fundo aparece por dentro do prédio.
+              Este arquivo NÃO é arte nova: é a silhueta do próprio
+              `santuario logo.png`, com o miolo fechado, pintada na cor de
+              fundo (#F7F5EB). Foi gerado assim, e dá para refazer a qualquer
+              momento:
 
               magick "santuario logo.png" -alpha extract -threshold 40% m.png
               magick m.png -morphology Close Disk:10 f.png
@@ -123,26 +132,42 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
               magick -size 846x726 xc:"#F7F5EB" s.png -alpha off \
                      -compose CopyOpacity -composite "santuario logo preenchido.png"
 
-            Se o designer mandar a versão da igreja já com o fundo creme
-            embutido, é só trocar por ela e apagar esta camada. */}
-        <div className="absolute inset-x-0 top-[36.1vh] z-[3] flex justify-center">
-          <img src="/looping/santuario%20logo%20preenchido.png" alt="" className="w-[42.2%] h-auto" />
+              Se o designer mandar a versão da igreja já com o fundo creme
+              embutido, é só trocar por ela e apagar esta camada.
+
+              `max-w-none` é obrigatório nas duas camadas da igreja: ela é
+              mais larga que a caixa (109,9%) e o `max-width: 100%` que o
+              Tailwind põe em todo <img> a encolheria sem avisar. */}
+          <img
+            src="/looping/santuario%20logo%20preenchido.png"
+            alt=""
+            className="absolute max-w-none h-auto"
+            style={{ left: '-10.2%', top: '52.8%', width: '109.9%' }}
+          />
+          <img
+            src="/looping/santuario%20logo.png"
+            alt="Santuário Divino Espírito Santo"
+            className="absolute max-w-none h-auto"
+            style={{ left: '-10.2%', top: '52.8%', width: '109.9%' }}
+          />
         </div>
 
-        <div className="absolute inset-x-0 top-[36.1vh] z-[4] flex justify-center">
-          <img src="/looping/santuario%20logo.png" alt="Santuário Divino Espírito Santo" className="w-[42.2%] h-auto" />
-        </div>
+        {/* Marca escrita. Tamanhos e espaços medidos no mockup em 23/09/2026:
+            "SANTUÁRIO" começa ~10px abaixo da base da igreja.
 
-        {/* Marca escrita */}
-        <div className="absolute inset-x-0 top-[58.7vh] z-[4] flex flex-col items-center">
-          <img src="/looping/santuario.png" alt="" className="w-[64.4%] h-auto" />
-          <img src="/looping/divino%20espirito%20santo.png" alt="" className="w-[63.2%] h-auto mt-[0.3vh]" />
-          <img src="/looping/vila%20velha%20espirito%20santo.png" alt="" className="w-[50.4%] h-auto mt-[0.35vh]" />
+            Os dois `-translate-x` não são engano: no mockup a linha
+            "····· VILA VELHA | ES ·····" fica ~15px à esquerda do eixo e a
+            lente ~6px, enquanto SANTUÁRIO e DIVINO ESPÍRITO SANTO estão
+            centrados. Para centralizar, é só tirar os dois. */}
+        <div className="absolute inset-x-0 top-[56.8vh] z-[4] flex flex-col items-center">
+          <img src="/looping/santuario.png" alt="" className="w-[66.6%] h-auto" />
+          <img src="/looping/divino%20espirito%20santo.png" alt="" className="w-[63.2%] h-auto mt-[0.6vh]" />
+          <img src="/looping/vila%20velha%20espirito%20santo.png" alt="" className="w-[51.6%] h-auto mt-[0.87vh] -translate-x-[1.4vw]" />
           {/* Lente dourada (`sublinhado.png`). Ela estava sem uso no projeto:
               numa auditoria anterior eu concluí que não aparecia no mockup, e
               estava errado — no mockup ela fecha a marca, logo abaixo de
-              "VILA VELHA | ES", em ~73,4% da altura da tela. */}
-          <img src="/looping/sublinhado.png" alt="" className="w-[33%] h-auto mt-[1.8vh]" />
+              "VILA VELHA | ES". */}
+          <img src="/looping/sublinhado.png" alt="" className="w-[33%] h-auto mt-[1.07vh] -translate-x-[0.6vw]" />
         </div>
 
         {/* Chamada para o toque. O pulsar fica só aqui, para o brasão não piscar. */}
