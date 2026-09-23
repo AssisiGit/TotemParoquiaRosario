@@ -91,7 +91,7 @@ export default async function ConfissoesPage() {
       </div>
 
       {/* 4) BOTÕES SOBRE A FOTO */}
-      <NavVoltarInicio hrefVoltar="/" className="absolute inset-x-0 bottom-[4.2vh] z-20" />
+      <NavVoltarInicio hrefVoltar="/?ativo=true" className="absolute inset-x-0 bottom-[4.2vh] z-20" />
     </div>
   );
 }

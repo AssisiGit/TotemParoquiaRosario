@@ -15,6 +15,11 @@ export function NavVoltarInicio({
   hrefVoltar,
   className = 'relative z-10 mt-8',
 }: {
+  // Para onde a setinha volta. **Atenção**: para voltar ao Menu Inicial o
+  // valor é `/?ativo=true`, não `/`. A rota `/` sozinha cai na tela de
+  // descanso ("Toque para Iniciar" / carrossel), porque o TotemClient só
+  // nasce no estado 'menu' quando vê `ativo=true` na query. Missas e
+  // Confissões tinham `/` e caíam no looping — corrigido em 22/09/2026.
   hrefVoltar: string;
   // Controla posicionamento/espaçamento (ex: 'absolute inset-x-0 bottom-[5.5vh] z-20'
   // para sobrepor os botões em cima de uma foto). Substitui o padrão inteiro.

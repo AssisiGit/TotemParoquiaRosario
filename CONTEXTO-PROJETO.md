@@ -660,6 +660,23 @@ Hoje há **1 imagem só** cadastrada no carrossel. Com menos de 2 imagens o
 seja, o carrossel mostra uma foto parada e o tempo de 20s não tem efeito
 visível. Para ver a troca acontecendo é preciso cadastrar pelo menos duas.
 
+## A armadilha do `/` sem `?ativo=true` (22/09/2026)
+
+A setinha "Voltar" de **Missas** e **Confissões** apontava para `/`, e caía na
+tela de descanso (o looping "Toque para Iniciar") em vez do Menu Inicial.
+
+O motivo está no `TotemClient`: ele só nasce no estado `'menu'` quando vê
+`ativo=true` na query (`searchParams.get('ativo') === 'true'`). Sem isso o
+estado inicial é `'repouso'`. Ou seja:
+
+- `/` → tela de descanso / carrossel
+- `/?ativo=true` → Menu Inicial
+
+As outras 13 telas já usavam `/?ativo=true`; só essas duas estavam erradas.
+O `NavVoltarInicio` agora traz esse aviso no comentário da prop `hrefVoltar`,
+que é onde quem for criar tela nova vai olhar. O botão "Início" do próprio
+componente sempre esteve certo — ele já tinha o `?ativo=true` fixo.
+
 ## Pendências / próximos passos
 
 1. **Outras opções do menu principal ainda sem página.** A lista real do
