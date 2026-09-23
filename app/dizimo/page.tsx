@@ -26,7 +26,15 @@ export default async function DizimoPage() {
         className="relative z-[3] block mx-auto h-auto mt-[3.7vh]"
       />
 
-      {/* Título sobre as duas faixas claras do recorte real */}
+      {/* Título sobre as duas faixas claras do recorte real.
+
+          Os `top` centram as LETRAS em cada faixa (espaço igual em cima e
+          embaixo da tinta), não a caixa de linha da fonte. Na Asah a caixa
+          de linha centrada deixa o texto alto: "dizimista" não tem
+          descendente, então as hastes do d/t saíam 2px por cima da faixa e
+          sobravam 31px embaixo. "Seja um" ocupa a faixa inteira (do topo do
+          S ao pé do j) e só precisou de 1px; o -0.3% em x compensa a faixa
+          de cima, que no recorte fica 1,5px à esquerda do centro. */}
       <div className="absolute left-1/2 -translate-x-1/2 top-[14.7vh] w-[65.6%] aspect-[677/263] z-[2]">
         <img
           src="/dizimo/fundo%20fonte.png"
@@ -35,13 +43,13 @@ export default async function DizimoPage() {
         />
         <span
           style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(3rem, 12vw, 8.6rem)' }}
-          className="absolute inset-x-0 top-[23.2%] -translate-y-1/2 text-center text-[#8B1E31] leading-none"
+          className="absolute inset-x-0 top-[22.7%] -translate-y-1/2 -translate-x-[0.3%] text-center text-[#8B1E31] leading-none"
         >
           Seja um
         </span>
         <span
           style={{ fontFamily: 'var(--font-asah)', fontSize: 'clamp(3rem, 12vw, 8.6rem)' }}
-          className="absolute inset-x-0 top-[76.2%] -translate-y-1/2 text-center text-[#8B1E31] leading-none"
+          className="absolute inset-x-0 top-[82.2%] -translate-y-1/2 text-center text-[#8B1E31] leading-none"
         >
           dizimista
         </span>
