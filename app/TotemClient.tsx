@@ -1,7 +1,7 @@
 // app/TotemClient.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { ConfigTotem } from '../sanity/lib/getConfigTotem';
@@ -16,6 +16,10 @@ interface MenuItem {
 
 type Tela = 'menu' | 'carrossel' | 'repouso';
 
+// Quanto tempo, depois do toque no looping, a camada do looping continua
+// recebendo os toques: é o fade de saída dela (duration-700) com folga.
+const TRAVA_SAIDA_REPOUSO_MS = 800;
+
 export default function TotemClient({ menuItens, config }: { menuItens: MenuItem[], config: ConfigTotem | null }) {
   const searchParams = useSearchParams();
   const veioDoInicio = searchParams.get('ativo') === 'true';
@@ -28,8 +32,22 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
   // 'repouso' -> toque -> 'menu'
   const [tela, setTela] = useState<Tela>(veioDoInicio ? 'menu' : 'repouso');
 
+  // O menu leva 700ms para aparecer, mas já aceita toque desde o início do
+  // fade. Um segundo toque apressado no looping abria a tela do botão que
+  // estivesse por baixo, sem a pessoa nem ter visto o menu. Enquanto isto
+  // está ligado, a camada do looping (sumindo) continua segurando os toques.
+  const [saindoDoRepouso, setSaindoDoRepouso] = useState(false);
+
+  // O handler de toque vive fora do render (listener no document) e lê a
+  // tela atual por aqui.
+  const telaRef = useRef<Tela>(tela);
+  useEffect(() => {
+    telaRef.current = tela;
+  }, [tela]);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
+    let timerTrava: ReturnType<typeof setTimeout>;
 
     const iniciarTimer = () => {
       clearTimeout(timer);
@@ -39,7 +57,18 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
       }, TEMPO_INATIVIDADE_MS);
     };
 
-    const interacaoUsuario = () => {
+    // Troca de tela SÓ no `click`. Um toque só dispara três eventos em
+    // sequência (touchstart, mousedown emulado e click); quando os três
+    // trocavam de tela, um toque no carrossel ia para o looping e, no mesmo
+    // toque, do looping para o menu — o looping nem aparecia. O click vem
+    // uma vez por toque e por último, já entregue à camada que estava
+    // visível, então também não "vaza" para o botão do menu por baixo.
+    const aoTocar = () => {
+      if (telaRef.current === 'repouso') {
+        setSaindoDoRepouso(true);
+        clearTimeout(timerTrava);
+        timerTrava = setTimeout(() => setSaindoDoRepouso(false), TRAVA_SAIDA_REPOUSO_MS);
+      }
       setTela((telaAtual) => {
         if (telaAtual === 'repouso') return 'menu';       // Toque para Iniciar -> Menu
         if (telaAtual === 'carrossel') return 'repouso';  // Carrossel -> Toque para Iniciar
@@ -48,13 +77,18 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
       iniciarTimer();
     };
 
-    const eventos = ['touchstart', 'mousedown', 'click'];
-    eventos.forEach((evento) => document.addEventListener(evento, interacaoUsuario));
+    // Qualquer encostar de dedo (inclusive arrastar uma lista, que não gera
+    // click) mantém o totem acordado.
+    const eventosTimer = ['pointerdown', 'touchstart'];
+    eventosTimer.forEach((evento) => document.addEventListener(evento, iniciarTimer));
+    document.addEventListener('click', aoTocar);
     iniciarTimer();
 
     return () => {
       clearTimeout(timer);
-      eventos.forEach((evento) => document.removeEventListener(evento, interacaoUsuario));
+      clearTimeout(timerTrava);
+      eventosTimer.forEach((evento) => document.removeEventListener(evento, iniciarTimer));
+      document.removeEventListener('click', aoTocar);
     };
   }, [temCarrossel]);
 
@@ -67,8 +101,8 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           não usa fluxo/margens aqui. */}
       <div
         className={`absolute inset-0 z-50 bg-[#F7F5EB] overflow-hidden transition-opacity duration-700 cursor-pointer ${
-          tela === 'repouso' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+          tela === 'repouso' ? 'opacity-100' : 'opacity-0'
+        } ${tela === 'repouso' || saindoDoRepouso ? 'pointer-events-auto' : 'pointer-events-none'}`}
       >
         {/* Divino Espírito Santo em traço claro, atrás de tudo (mesmo recorte
             usado em Avisos e Redes Sociais) */}

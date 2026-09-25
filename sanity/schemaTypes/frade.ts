@@ -58,6 +58,14 @@ export default defineType({
       initialValue: 'dourado',
     }),
     defineField({
+      name: 'descerFoto',
+      title: 'Descer a foto (%)',
+      description:
+        'Deixe vazio na maioria dos casos. Use só se o hábito parecer cortado no canto de baixo do cabeçalho: a foto desce e o pedaço de baixo fica escondido pela borda. Entre 5 e 8 costuma bastar.',
+      type: 'number',
+      validation: (Rule) => Rule.min(0).max(30),
+    }),
+    defineField({
       name: 'ordem',
       title: 'Ordem de Exibição',
       type: 'number',

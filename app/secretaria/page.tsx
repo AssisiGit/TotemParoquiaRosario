@@ -5,7 +5,16 @@ import { NavVoltarInicio } from '../sobre-nos/_components/NavVoltarInicio';
 export const revalidate = 60;
 
 // Foto que já está no totem. Vale enquanto ninguém enviar outra pelo Sanity.
-const FOTO_PADRAO = '/secretaria/foto.png';
+//
+// `foto transparente.webp` é o `foto.jpeg` (a versão em alta do designer)
+// com o esmaecido PRETO trocado por transparência. JPEG não tem alfa, então
+// o degradê que deveria sumir no creme veio pintado de preto, e a máscara
+// daqui de baixo o transformava numa faixa cinza atrás dos telefones. O alfa
+// é o do `foto1.png` antigo (o esmaecido que já batia com o mockup), alinhado
+// ao JPEG; a cor é a do JPEG sem o preto. Ver CONTEXTO-PROJETO.md, "Secretaria:
+// o preto do JPEG". Se vier outra foto, peça ao designer em PNG com fundo
+// transparente, não em JPEG.
+const FOTO_PADRAO = '/secretaria/foto%20transparente.webp';
 
 export default async function SecretariaPage() {
   const pagina = await getPaginaSecretaria();

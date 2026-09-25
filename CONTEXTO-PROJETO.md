@@ -222,7 +222,7 @@ telas**, não só no menu inicial. Quem cuida disso:
   É também onde fica a **casinha de indicação** no rodapé (ver abaixo).
 - `app/_components/ProtetorDeTela.tsx` — montado no `app/layout.tsx`, ou seja,
   vale para o projeto inteiro. Nas páginas internas (Missas, Avisos, Sobre
-  Nós...) ele conta os 30s e sobrepõe o carrossel em `fixed inset-0 z-[100]`;
+  Nós...) ele conta os 20s e sobrepõe o carrossel em `fixed inset-0 z-[100]`;
   o toque seguinte manda o totem de volta para `/` ("Toque para Iniciar"),
   pronto para a próxima pessoa. Se **não houver imagem cadastrada** no
   carrossel, ele volta direto para `/` sem passar pelo carrossel.
@@ -232,6 +232,46 @@ telas**, não só no menu inicial. Quem cuida disso:
   **se desliga em `/`** (dois donos do mesmo timer brigariam) e também em
   `/studio` (ninguém quer o carrossel cobrindo o formulário no meio de um
   cadastro).
+
+### Troca de tela só no `click` (25/09/2026)
+
+O fluxo sempre foi para ser **carrossel → looping (logo do santuário) →
+menu**, um toque de cada vez. Mas no toque de verdade o carrossel pulava
+direto para o menu, e o looping nem aparecia. O motivo: **um toque só dispara
+três eventos** — `touchstart`, `mousedown` emulado e `click` —, e os dois
+componentes trocavam de tela em qualquer um deles. O primeiro levava ao
+looping e o segundo, do mesmo toque, ao menu. Nas páginas internas era pior:
+o carrossel sumia no `touchstart`, e o `click` do mesmo toque caía no botão
+que estivesse por baixo (tocar em cima do "Início" de Missas abria o menu).
+
+Com **mouse** o defeito não aparecia (o `click` não dispara quando o alvo muda
+entre apertar e soltar), por isso passa despercebido testando no computador.
+
+Agora, em `TotemClient` e `ProtetorDeTela`:
+
+- **a troca de tela acontece só no `click`**, que vem uma vez por toque e por
+  último, já entregue à camada visível — não vaza para o que está por baixo;
+- `pointerdown`/`touchstart` **só reiniciam o cronômetro de 20s** (arrastar
+  uma lista não gera click e precisa manter o totem acordado).
+
+O mesmo defeito, no sentido contrário, era o **"toque no looping abre uma
+aba"**: o looping sumia no `touchstart` e o `click` do mesmo toque abria o
+botão do menu que estivesse embaixo — dependia de onde se tocava. Medido com
+o código antigo, tocando o looping em cima de cada um dos 11 botões: **11 de
+11 abriam a aba**. Com a troca só no `click`: **0 de 11**.
+
+**Trava de 800ms na saída do looping** (`TRAVA_SAIDA_REPOUSO_MS` em
+`TotemClient`). O menu leva 700ms para aparecer (fade), mas já aceitava
+toque desde o começo. Um segundo toque apressado, a 250–650ms do primeiro,
+abria a aba sem a pessoa ter visto o menu. Agora, durante esses 800ms, a
+camada do looping (sumindo) continua com `pointer-events-auto` e segura os
+toques; depois disso o menu já está inteiro na tela e o toque vale.
+
+Testado com toques e cliques simulados no Chrome (CDP, `Input.dispatchTouchEvent`
+com emulação de toque): carrossel → looping → menu no menu inicial;
+carrossel de `/missas` tocado em cima do "Início" → `/` no looping; e,
+sem regressão, botão do menu abre a página, "Início" volta ao menu, e um
+toque aos 15s adia o carrossel.
 
 Como o carrossel vem do Sanity e o layout é quem busca, **toda página precisa
 de `export const revalidate = 60`** — inclusive as que não usam Sanity para
@@ -322,7 +362,7 @@ Todas as páginas abaixo seguem o fluxo descrito acima (design pixel-a-perfeito
 | Carisma | `/sobre-nos/carisma` | `paginaCarisma` | 1 campo de imagem |
 | São Francisco | `/sobre-nos/sao-francisco` | `paginaSaoFrancisco` | foto full-bleed + degradê |
 | Fraternidade (lista) | `/sobre-nos/fraternidade` | `paginaFraternidade` (capa) + `frade` (lista) | usa assets reais de `public/fraternidade` (sunburst, tau, divisor) |
-| Frade (detalhe) | `/sobre-nos/fraternidade/[id]` | `frade` | schema já existia antes desta fase do projeto |
+| Frade (detalhe) | `/sobre-nos/fraternidade/[id]` | `frade` | schema já existia antes desta fase do projeto. Foto inteira, sem corte, e campo "Descer a foto" — ver "Frades: foto sem corte" |
 | Horário de Missas | `/missas` | `paginaMissas` | foto + 4 grupos de horário editáveis (Terça-Sexta, Sábado, Domingo, 1ª Quinta do Mês), cada um com array de horários + observação opcional. Usa `public/missas/vetor.png` (rosácea decorativa) |
 | Confissões | `/confissoes` | `paginaConfissoes` | 2 fotos editáveis (fundo esmaecido no topo + foto principal embaixo). Horários fixos no código (usuário só pediu Sanity pras fotos) |
 | Padroeiro do Santuário | `/padroeiro` | **não** | Ilustração da pomba (`public/padroeiro/santuario.png`) + véu degradê (`degrade branco.png`) que a dissolve no fundo, barra dourada (`retangulo separação.png`). Sem foto e sem texto variável, então não tem schema |
@@ -330,7 +370,7 @@ Todas as páginas abaixo seguem o fluxo descrito acima (design pixel-a-perfeito
 | Calendário de Eventos | `/eventos` | `evento` (lista) + `paginaEventos` (foto) | Lista de eventos (data + nome + horário), cada um um documento ordenado por `ordem`. A foto do rodapé (arco/cúpula, feita com `border-radius` elíptico `50% 50% 0 0 / 31% 31% 0 0`) é editável separadamente. Usa `public/eventos/evento vetor desenho.png` (igreja em traço claro atrás da lista) |
 | Avisos | `/avisos` | `aviso` (lista) | Cartões bege (`public/avisos/Retângulo bege.png`) montados da lista do Sanity. O cartão **cresce conforme o texto** (min-height + padding, retângulo esticado com `object-fill`), então avisos longos não são cortados. Cada aviso tem um campo de **imagem opcional** (pensado para QR Code de inscrição): quando preenchido, o cartão vira duas colunas — texto alinhado à esquerda (`flex-1`) + o anexo num quadrado branco de 26% da largura (o branco garante a leitura do QR mesmo se a imagem não tiver margem); sem imagem, o texto continua centralizado como antes. Usa `Icon Avisos.png` e `vetor divino espirito.png` (fundo em traço claro) |
 | Dízimo | `/dizimo` | `paginaDizimo` (QR Code) | "Seja um dizimista". Coração, TAU, título e frase do rodapé são fixos no código. Só o QR Code é editável — e é **opcional**: enquanto o campo estiver vazio vale o `public/dizimo/qr code.png`. A moldura vermelha/bege vem do próprio recorte; o QR do Sanity é sobreposto na área branca interna, então a secretaria envia só o quadrado do código |
-| Secretaria | `/secretaria` | `paginaSecretaria` | Horários (array de objetos dias+horario), telefones (array de string) e WhatsApp (texto + número) todos editáveis. A foto é **opcional** — vazia, vale `public/secretaria/foto.png`. A foto fica à direita, dissolvida no fundo com `mask-image` (gradiente pela esquerda + por baixo, `mask-composite: intersect`). Fundo desta tela e da de Dízimo é `#F7F5EB`, não o `#FDFBF7` das outras |
+| Secretaria | `/secretaria` | `paginaSecretaria` | Horários (array de objetos dias+horario), telefones (array de string) e WhatsApp (texto + número) todos editáveis. A foto é **opcional** — vazia, vale `public/secretaria/foto transparente.webp` (ver "Secretaria: o preto do JPEG"). A foto fica à direita, dissolvida no fundo com `mask-image` (gradiente pela esquerda + por baixo, `mask-composite: intersect`). Fundo desta tela e da de Dízimo é `#F7F5EB`, não o `#FDFBF7` das outras |
 | Redes Sociais | `/redesocial` | `paginaRedesSociais` (3 QR Codes) | **Atenção: a rota é `redesocial`, sem hífen** — é assim que está no `menuTotem`. Faixa vermelha (`#8B1E31`) de ponta a ponta com 3 colunas (ícone + QR), montada em `grid-cols-3` para ícone e QR ficarem no mesmo eixo. A moldura branca do QR é CSS (`border` + `border-radius`), não asset — por isso a secretaria envia só o quadrado do código. Os 3 campos são **opcionais**: vazios, valem os QR Codes de `public/redessociais/`. Reaproveita `public/avisos/vetor divino espirito.png` (fundo) e `public/dizimo/TAU.png` |
 
 ## Rodada de ajustes visuais (19/09/2026)
@@ -753,6 +793,67 @@ As outras 13 telas já usavam `/?ativo=true`; só essas duas estavam erradas.
 O `NavVoltarInicio` agora traz esse aviso no comentário da prop `hrefVoltar`,
 que é onde quem for criar tela nova vai olhar. O botão "Início" do próprio
 componente sempre esteve certo — ele já tinha o `?ativo=true` fixo.
+
+## Secretaria: o preto do JPEG (25/09/2026)
+
+O usuário trocou a foto da Secretaria por uma versão em alta do designer
+(`foto.jpeg`, 1536x2752) e renomeou a antiga para `foto1.png` (1080x1591).
+Na tela apareceu uma faixa cinza-escura atrás dos telefones e no canto de
+baixo.
+
+**Causa:** JPEG não tem transparência. O esmaecido que no PNG antigo era
+**alfa** (a foto sumindo no creme) veio no JPEG **pintado de preto**, e a
+máscara CSS da página transformava esse preto em cinza.
+
+**Como ficou:** `public/secretaria/foto transparente.webp` (1536x2752, 1,2MB),
+derivado dos dois arquivos do designer:
+
+- **alfa** = o do `foto1.png` antigo, alinhado ao JPEG. O registro é
+  `novo = 1,75 × antigo + (-362, 2)`: o JPEG é a mesma foto, 1,75x maior e
+  cortada à esquerda. Esse é o esmaecido que já batia com o mockup.
+- **cor** = a do JPEG com o preto desfeito (`novo / β`). β é o escurecimento
+  embutido, medido pixel a pixel como `novo / foto antiga`. Dá para medir
+  porque **o `foto1.png` guarda a foto inteira nos canais de cor**, até onde o
+  alfa esconde (dá para ver o TAU "Paz e Bem" ali). Onde o JPEG é quase preto
+  a cor vem da foto antiga, mas lá o alfa é quase zero; isso responde por ~15%
+  do que aparece, e só nas bordas esmaecidas.
+
+O esmaecido novo do JPEG **não** é o mesmo do antigo: ele mostra mais foto
+(na zona em que o alfa antigo vale 0,5, o JPEG está ~80% claro). Por isso
+não dá para simplesmente "tirar o preto" com o esmaecido dele — a divisão
+direta sai ruidosa, porque as duas exportações têm contraste diferente.
+
+A máscara CSS da esquerda **ficou**, mesmo quase não fazendo diferença com
+este arquivo (testado sem ela: muda pouco, porque o alfa já é ~0 onde ela
+age). Ela protege o caso de a secretaria enviar pelo Sanity uma foto comum,
+opaca — sem a máscara, essa foto terminaria numa borda reta atrás do texto.
+
+**Se vier outra foto do designer**, peça em **PNG com fundo transparente**
+(ou WebP com alfa), não JPEG. `foto.jpeg` e `foto1.png` continuam na pasta
+porque são a fonte do arquivo derivado. O script que fez a conversão (Python
+com numpy/scipy/Pillow, fora do projeto) não ficou guardado; o método está
+todo descrito acima.
+
+## Frades: foto sem corte (25/09/2026)
+
+As fotos dos frades no Sanity são **recortes com fundo transparente, em
+paisagem: todas 714x489 (1,46:1)**. A página as punha numa caixa de 67% da
+largura, quase quadrada, com `object-cover`, e ~16% de cada lado sumiam — os
+ombros saíam cortados (o Frei Vanderley Grassi, de hábito mais largo, era o
+pior). Agora a caixa ocupa a largura toda do cabeçalho com
+`object-contain object-bottom`: a foto aparece inteira, **no mesmo tamanho**
+(quem manda é a altura de 38vh do cabeçalho) e apoiada na borda de baixo.
+
+**Campo novo `descerFoto`** ("Descer a foto (%)", no schema `frade`). Alguns
+recortes terminam em diagonal no pé do hábito; no Frei Vanderley Grassi essa
+diagonal caía bem no canto arredondado do cabeçalho e parecia corte. O valor
+vira `translateY(N%)` na foto, e o pedaço de baixo fica escondido pela borda.
+Hoje só o Grassi usa: **6**, gravado pela CLI (`sanity documents get` →
+acrescenta o campo → `sanity documents create --replace`; conferido que só
+`descerFoto` mudou no documento). Os outros quatro ficam vazios.
+
+Atenção ao testar mudança no Sanity: a primeira visita depois de gravar ainda
+vem do cache (a página tem `revalidate = 60`); só a seguinte mostra o novo.
 
 ## Pendências / próximos passos
 

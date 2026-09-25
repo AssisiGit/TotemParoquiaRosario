@@ -16,6 +16,7 @@ async function getFradeDetalhes(id: string) {
     origem,
     descricao,
     corCabecalho,
+    descerFoto,
     "fotoUrl": foto.asset->url
   }`;
 
@@ -98,10 +99,26 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
           style={{ right: '-13vh', top: '6vh', width: '34vh', height: '34vh', objectFit: 'contain', transform: 'scaleX(-1)' }}
         />
 
-        {/* Foto do frade, centralizada, mais estreita que a tela toda */}
-        <div className="relative w-[67%] h-full overflow-hidden">
+        {/* Foto do frade. As fotos do Sanity são recortes com fundo
+            transparente, em paisagem (714x489, 1,46:1). Numa caixa de 67%
+            (quase quadrada) com `object-cover`, ~16% de cada lado sumiam e
+            os ombros saíam cortados. Na largura toda com `object-contain`
+            a foto inteira aparece, no MESMO tamanho de antes (quem manda é
+            a altura do cabeçalho), apoiada na borda de baixo; o que é
+            transparente deixa os raios aparecerem.
+
+            "Descer a foto" (Sanity, em % da altura) existe porque alguns
+            recortes terminam em diagonal no pé do hábito. No Frei Vanderley
+            Grassi essa diagonal caía bem no canto arredondado e parecia
+            corte; descendo 6%, ela fica escondida abaixo da borda. */}
+        <div className="relative w-full h-full">
           {frade.fotoUrl ? (
-            <img src={frade.fotoUrl} alt={frade.nome} className="w-full h-full object-cover object-top" />
+            <img
+              src={frade.fotoUrl}
+              alt={frade.nome}
+              className="w-full h-full object-contain object-bottom"
+              style={frade.descerFoto ? { transform: `translateY(${frade.descerFoto}%)` } : undefined}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/60 text-sm">Sem foto</div>
           )}

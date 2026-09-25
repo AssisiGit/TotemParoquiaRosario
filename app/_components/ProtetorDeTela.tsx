@@ -56,10 +56,22 @@ export default function ProtetorDeTela({ imagens }: { imagens: string[] }) {
       }, TEMPO_INATIVIDADE_MS);
     };
 
-    const interacaoUsuario = () => {
+    // Qualquer encostar de dedo (inclusive arrastar uma lista, que não gera
+    // click) mantém a página acordada.
+    const aoEncostar = () => {
+      if (!mostrandoRef.current) iniciarTimer();
+    };
+
+    // Sair do carrossel SÓ no `click`. Com touchstart o carrossel sumia no
+    // começo do toque e o click do MESMO toque caía no que estivesse por
+    // baixo — tocar em cima do botão "Início" de Missas ia para o menu em
+    // vez da tela "Toque para Iniciar". O click vem por último, já entregue
+    // à camada do carrossel, e não vaza.
+    const aoTocar = () => {
       if (mostrandoRef.current) {
-        // Toque durante o carrossel: volta para o início. Não reinicia o
-        // timer — daqui em diante quem manda é a tela inicial.
+        // Toque durante o carrossel: volta para o início ("/", o looping com
+        // a logo). Não reinicia o timer — daqui em diante quem manda é a
+        // tela inicial.
         mostrar(false);
         clearTimeout(timer);
         router.push('/');
@@ -68,13 +80,15 @@ export default function ProtetorDeTela({ imagens }: { imagens: string[] }) {
       iniciarTimer();
     };
 
-    const eventos = ['touchstart', 'mousedown', 'click'];
-    eventos.forEach((evento) => document.addEventListener(evento, interacaoUsuario));
+    const eventosTimer = ['pointerdown', 'touchstart'];
+    eventosTimer.forEach((evento) => document.addEventListener(evento, aoEncostar));
+    document.addEventListener('click', aoTocar);
     iniciarTimer();
 
     return () => {
       clearTimeout(timer);
-      eventos.forEach((evento) => document.removeEventListener(evento, interacaoUsuario));
+      eventosTimer.forEach((evento) => document.removeEventListener(evento, aoEncostar));
+      document.removeEventListener('click', aoTocar);
     };
   }, [ativo, pathname, temCarrossel, router]);
 
