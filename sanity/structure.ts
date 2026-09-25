@@ -8,7 +8,7 @@ const PAGINAS_UNICAS: { id: string; titulo: string }[] = [
   { id: 'paginaQuemSomos', titulo: 'Quem Somos' },
   { id: 'paginaCarisma', titulo: 'Carisma' },
   { id: 'paginaSaoFrancisco', titulo: 'São Francisco' },
-  { id: 'paginaFraternidade', titulo: 'Fraternidade (Capa)' },
+  { id: 'paginaFraternidade', titulo: 'Fraternidade (Foto dos Frades Juntos)' },
   { id: 'paginaMissas', titulo: 'Horário de Missas' },
   { id: 'paginaConfissoes', titulo: 'Confissões' },
   { id: 'paginaEventos', titulo: 'Eventos (Foto)' },
@@ -25,16 +25,33 @@ const LISTAS: { id: string; titulo: string }[] = [
   { id: 'aviso', titulo: 'Avisos' },
 ]
 
+// A lista de frades aparece logo abaixo da foto de grupo da Fraternidade.
+// Antes ela caía no fim da barra lateral, longe da capa, e a secretaria não
+// achava onde trocar a foto dos frades juntos (procurava em "Frades").
+const FRADES = { id: 'frade', titulo: 'Frades (Fraternidade)' };
+
 export const structure: StructureResolver = (S) =>
   S.list()
     .title('Conteúdo do Totem')
     .items([
-      ...PAGINAS_UNICAS.map(({ id, titulo }) =>
-        S.listItem()
+      ...PAGINAS_UNICAS.flatMap(({ id, titulo }) => {
+        const item = S.listItem()
           .title(titulo)
           .id(id)
-          .child(S.document().schemaType(id).documentId(id).title(titulo))
-      ),
+          .child(S.document().schemaType(id).documentId(id).title(titulo));
+        if (id !== 'paginaFraternidade') return [item];
+        return [
+          item,
+          S.listItem()
+            .title(FRADES.titulo)
+            .id(FRADES.id)
+            .child(
+              S.documentTypeList(FRADES.id)
+                .title(FRADES.titulo)
+                .defaultOrdering([{ field: 'ordem', direction: 'asc' }])
+            ),
+        ];
+      }),
       S.divider(),
       // Estas são LISTAS (a secretaria cadastra/remove vários itens), por isso
       // não entram em PAGINAS_UNICAS: cada uma abre uma lista com botão de
@@ -52,6 +69,7 @@ export const structure: StructureResolver = (S) =>
       ...S.documentTypeListItems().filter(
         (item) =>
           !LISTAS.some((l) => l.id === item.getId()) &&
-          !PAGINAS_UNICAS.some((p) => p.id === item.getId())
+          !PAGINAS_UNICAS.some((p) => p.id === item.getId()) &&
+          item.getId() !== FRADES.id
       ),
     ])

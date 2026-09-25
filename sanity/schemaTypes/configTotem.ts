@@ -17,6 +17,12 @@ export default defineType({
       type: 'image',
       description: 'Esta imagem ficará no topo da foto principal.',
       options: { hotspot: true },
+      // Escondido: a logo do Menu Inicial passou a vir do código
+      // (public/menuinicial/logotipo.svg), porque o Studio não aceitou o
+      // arquivo novo. O campo continua no schema para não perder dados; se um
+      // dia a logo voltar para o Sanity, é só tirar esta linha e voltar a ler
+      // `logoSantuario` no getConfigTotem/TotemClient.
+      hidden: true,
     }),
     defineField({
       name: 'marcaDagua',

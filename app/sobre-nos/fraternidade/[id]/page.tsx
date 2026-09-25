@@ -110,14 +110,18 @@ export default async function FradeDetalhesPage({ params }: { params: Promise<{ 
             "Descer a foto" (Sanity, em % da altura) existe porque alguns
             recortes terminam em diagonal no pé do hábito. No Frei Vanderley
             Grassi essa diagonal caía bem no canto arredondado e parecia
-            corte; descendo 6%, ela fica escondida abaixo da borda. */}
+            corte; descendo 6%, ela fica escondida abaixo da borda.
+
+            Os 0,5% de base valem para todos: as fotos de 773x530 (setembro
+            de 2026) vêm com a última linha transparente, e ela aparecia
+            como um fio da cor do cabeçalho entre o hábito e a borda. */}
         <div className="relative w-full h-full">
           {frade.fotoUrl ? (
             <img
               src={frade.fotoUrl}
               alt={frade.nome}
               className="w-full h-full object-contain object-bottom"
-              style={frade.descerFoto ? { transform: `translateY(${frade.descerFoto}%)` } : undefined}
+              style={{ transform: `translateY(${0.5 + (frade.descerFoto ?? 0)}%)` }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/60 text-sm">Sem foto</div>

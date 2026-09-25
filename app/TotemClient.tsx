@@ -16,6 +16,13 @@ interface MenuItem {
 
 type Tela = 'menu' | 'carrossel' | 'repouso';
 
+// Logo do canto superior direito do Menu Inicial. Fica no código (e não no
+// Sanity) porque o Studio não aceitou o arquivo: é um SVG do Canva de 1,8MB
+// que na verdade carrega duas imagens PNG de 2400px embutidas. O navegador
+// desenha normalmente. Para trocar a logo, substitua o arquivo em
+// public/menuinicial/ mantendo o nome.
+const LOGO_SANTUARIO = '/menuinicial/logotipo.svg';
+
 // Quanto tempo, depois do toque no looping, a camada do looping continua
 // recebendo os toques: é o fade de saída dela (duration-700) com folga.
 const TRAVA_SAIDA_REPOUSO_MS = 800;
@@ -243,24 +250,20 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
           )}
           
           {/* EFEITO DE LUZ BRANCA (Glow) NO EXTREMO CANTO */}
-          {config?.logoSantuarioUrl && (
-             // Usamos valores negativos maiores (-top-24 e -right-24) para empurrar o "miolo" da luz para a quina
-             <div className="absolute -top-16 -right-16 sm:-top-[13vw] sm:-right-[13vw] w-48 h-48 sm:w-[40vw] sm:h-[40vw] bg-white/80 blur-[60px] rounded-full z-10 pointer-events-none"></div>
-          )}
+          {/* Usamos valores negativos maiores (-top-24 e -right-24) para empurrar o "miolo" da luz para a quina */}
+          <div className="absolute -top-16 -right-16 sm:-top-[13vw] sm:-right-[13vw] w-48 h-48 sm:w-[40vw] sm:h-[40vw] bg-white/80 blur-[60px] rounded-full z-10 pointer-events-none"></div>
 
           {/* LOGO SOBREPOSTA NO EXTREMO CANTO DIREITO */}
-          {config?.logoSantuarioUrl && (
-             // Reduzimos de top-10/right-10 para top-4/right-4 para colar na borda
-             <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
-               <img
-                 src={config.logoSantuarioUrl}
-                 alt="Logo Santuário"
-                 // Altura em vw (e não px fixos) para a logo crescer junto com a tela do totem
-                 style={{ height: 'clamp(3rem, 13.5vw, 18rem)' }}
-                 className="object-contain drop-shadow-xl"
-               />
-             </div>
-          )}
+          {/* Reduzimos de top-10/right-10 para top-4/right-4 para colar na borda */}
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
+            <img
+              src={LOGO_SANTUARIO}
+              alt="Logo Santuário"
+              // Altura em vw (e não px fixos) para a logo crescer junto com a tela do totem
+              style={{ height: 'clamp(3rem, 13.5vw, 18rem)' }}
+              className="object-contain drop-shadow-xl"
+            />
+          </div>
           
           {/* Degradê inferior da foto (Ajustado com a nova cor de fundo #F7F5EB) */}
           <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#F7F5EB] to-transparent z-10"></div>

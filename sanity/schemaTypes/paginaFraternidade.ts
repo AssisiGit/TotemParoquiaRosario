@@ -6,13 +6,13 @@ import { defineType, defineField } from 'sanity';
 
 export default defineType({
   name: 'paginaFraternidade',
-  title: 'Fraternidade (Capa)',
+  title: 'Fraternidade (Foto dos Frades Juntos)',
   type: 'document',
   fields: [
     defineField({
       name: 'imagem',
       title: 'Imagem do Cabeçalho',
-      description: 'Foto exibida no topo desta página, atrás do título "Fraternidade".',
+      description: 'Foto dos frades juntos, exibida no topo da tela Fraternidade, atrás do título "Fraternidade". (A foto de cada frade fica no cadastro dele, em "Frades (Fraternidade)".)',
       type: 'image',
       options: { hotspot: true },
       validation: (Rule) => Rule.required(),
@@ -21,7 +21,7 @@ export default defineType({
   preview: {
     select: { media: 'imagem' },
     prepare({ media }) {
-      return { title: 'Fraternidade (Capa)', media };
+      return { title: 'Fraternidade (Foto dos Frades Juntos)', media };
     },
   },
 });

@@ -361,7 +361,7 @@ Todas as páginas abaixo seguem o fluxo descrito acima (design pixel-a-perfeito
 | Nossa História | `/sobre-nos/historia` | **não** | imagem estática, usuário pediu para não usar Sanity aqui |
 | Carisma | `/sobre-nos/carisma` | `paginaCarisma` | 1 campo de imagem |
 | São Francisco | `/sobre-nos/sao-francisco` | `paginaSaoFrancisco` | foto full-bleed + degradê |
-| Fraternidade (lista) | `/sobre-nos/fraternidade` | `paginaFraternidade` (capa) + `frade` (lista) | usa assets reais de `public/fraternidade` (sunburst, tau, divisor) |
+| Fraternidade (lista) | `/sobre-nos/fraternidade` | `paginaFraternidade` (capa — no Studio: "Fraternidade (Foto dos Frades Juntos)", com "Frades (Fraternidade)" logo abaixo) + `frade` (lista) | usa assets reais de `public/fraternidade` (sunburst, tau, divisor) |
 | Frade (detalhe) | `/sobre-nos/fraternidade/[id]` | `frade` | schema já existia antes desta fase do projeto. Foto inteira, sem corte, e campo "Descer a foto" — ver "Frades: foto sem corte" |
 | Horário de Missas | `/missas` | `paginaMissas` | foto + 4 grupos de horário editáveis (Terça-Sexta, Sábado, Domingo, 1ª Quinta do Mês), cada um com array de horários + observação opcional. Usa `public/missas/vetor.png` (rosácea decorativa) |
 | Confissões | `/confissoes` | `paginaConfissoes` | 2 fotos editáveis (fundo esmaecido no topo + foto principal embaixo). Horários fixos no código (usuário só pediu Sanity pras fotos) |
@@ -854,6 +854,60 @@ acrescenta o campo → `sanity documents create --replace`; conferido que só
 
 Atenção ao testar mudança no Sanity: a primeira visita depois de gravar ainda
 vem do cache (a página tem `revalidate = 60`); só a seguinte mostra o novo.
+
+### Fotos novas dos frades, enviadas pela CLI (25/09/2026)
+
+O usuário melhorou as cinco fotos (recortes PNG com fundo transparente,
+**773x530**, mesma proporção 1,46 das antigas) e não conseguiu enviá-las pelo
+Studio ("fica dando erro"). Deixou os arquivos em `public/frades/` com o nome
+de cada frade. **Pela CLI o Sanity aceitou os cinco sem erro nenhum** — então
+não era tamanho nem qualidade; o erro é do lado do Studio/navegador e a
+mensagem nunca foi vista. Script usado (roda de fora do projeto):
+
+    npx sanity exec enviar.mjs --with-user-token
+    // enviar.mjs: getCliClient({apiVersion}) de node_modules/sanity/lib/cli.js,
+    // client.assets.upload('image', stream, {filename}) e
+    // client.patch(id).set({ foto: {_type:'image', asset:{_type:'reference', _ref}} })
+
+Achado no caminho: o **Frei Aldolino já estava com um JPEG de 2476x1696**
+(a versão do Gemini), que entrou pelo Studio. JPEG não tem transparência, e
+nesta tela o fundo transparente é o que deixa os raios aparecerem. Foi
+trocado pelo `aldolino.png`. **Fotos de frade precisam ser PNG recortado.**
+
+`public/frades/` **não é lido pela página** — ela continua vindo do Sanity.
+Os arquivos ficaram só como fonte/cópia.
+
+**Os 0,5% de base no `translateY`**: as fotos novas têm a **última linha
+transparente**, e ela aparecia como um fio da cor do cabeçalho (1–2px, o
+dobro na TV) entre o hábito e a borda. Medido na última linha do cabeçalho,
+embaixo do hábito: antes, 280 de 280 pixels na cor do fundo em quatro dos
+cinco frades (o Grassi já escondia com os 6%); depois, zero nos cinco. A foto
+desce ~4px no total, imperceptível no enquadramento.
+
+## Menu Inicial: logo no código, não no Sanity (25/09/2026)
+
+O usuário tentou trocar a logo do canto superior direito por uma versão
+melhor pelo Studio (`configTotem.logoSantuario`) e o Studio deu erro. O
+arquivo, `public/menuinicial/logotipo.svg`, é um **SVG do Canva de 1,8MB que
+na verdade carrega duas imagens PNG de 2400px embutidas em base64** (a
+imagem e uma máscara de luminância com `feColorMatrix`) — o provável motivo
+da recusa. O Chrome desenha normalmente, nítido em DPR 2 e com fundo
+transparente.
+
+- `TotemClient` usa a constante `LOGO_SANTUARIO = '/menuinicial/logotipo.svg'`.
+  A logo e o brilho branco atrás dela agora aparecem sempre (antes os dois
+  dependiam do campo do Sanity, que **estava vazio** — o menu estava sem logo).
+- `logoSantuario` saiu da query do `getConfigTotem` e ficou `hidden: true` no
+  schema (os dados continuam lá). Para a logo voltar ao Sanity: tirar o
+  `hidden` e voltar a ler o campo.
+- Para trocar a logo: substituir o arquivo mantendo o nome.
+
+Pegadinha ao testar SVG: uma página `data:` no Chrome **não carrega** nada de
+`localhost` (bloqueio de rede privada) e mostra o ícone de imagem quebrada —
+parece defeito do arquivo e não é. Abra a URL do SVG direto.
+
+De passagem: o item **"Onde Estamos" não está mais no `menuTotem`** (hoje são
+10 itens, "Redes Sociais" é o último). A rota `/ondeestamos` nunca existiu.
 
 ## Pendências / próximos passos
 
