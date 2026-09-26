@@ -11,7 +11,7 @@ export default defineType({
     defineField({
       name: 'fotoFundo',
       title: 'Foto de Fundo (topo)',
-      description: 'Foto que aparece esmaecida atrás do título "Confissões" e dos horários, no topo da tela.',
+      description: 'Foto que aparece esmaecida atrás do título "Confissões" e dos horários, no topo da tela. Precisa ser PNG (ou WebP) com transparência: o esmaecido vem do próprio arquivo. Foto em JPEG aparece com manchas pretas.',
       type: 'image',
       options: { hotspot: true },
       validation: (Rule) => Rule.required(),
@@ -19,7 +19,7 @@ export default defineType({
     defineField({
       name: 'fotoPrincipal',
       title: 'Foto Principal (parte de baixo)',
-      description: 'Foto nítida exibida na parte de baixo desta página (atrás dos botões Voltar/Início).',
+      description: 'Foto nítida exibida na parte de baixo desta página (atrás dos botões Voltar/Início). Precisa ser PNG (ou WebP) com transparência no topo, onde ela se dissolve no fundo. Foto em JPEG aparece com uma faixa preta.',
       type: 'image',
       options: { hotspot: true },
       validation: (Rule) => Rule.required(),

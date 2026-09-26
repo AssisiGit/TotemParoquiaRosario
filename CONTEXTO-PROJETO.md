@@ -290,8 +290,9 @@ causa disso; sem ele a lista de slides ficaria congelada no build).
 - Cores principais (hex usados direto em `text-[#...]` do Tailwind):
   - `#8B1E31` — maroon, títulos (Asah) e textos/CTAs em destaque.
   - `#491F14` — marrom escuro, corpo de texto sobre fundo claro.
-  - `#241C14` — marrom quase preto, usado nos horários de "Confissões"
-    (mais escuro que o `#491F14` padrão).
+  - `#573A27` — marrom dos horários de "Confissões" e `#951E3B` — vinho da
+    frase "A paz começa em…", ambos medidos no mockup em 25/09/2026. (Antes
+    os horários usavam `#241C14`, que não vinha de mockup nenhum.)
   - `#7A5B4B` — marrom claro, observações/subtítulos secundários.
   - `#5A3B2B` / `#C79C45` — usados no menu inicial (`TotemClient.tsx`), fora
     do padrão das páginas internas.
@@ -364,7 +365,7 @@ Todas as páginas abaixo seguem o fluxo descrito acima (design pixel-a-perfeito
 | Fraternidade (lista) | `/sobre-nos/fraternidade` | `paginaFraternidade` (capa — no Studio: "Fraternidade (Foto dos Frades Juntos)", com "Frades (Fraternidade)" logo abaixo) + `frade` (lista) | usa assets reais de `public/fraternidade` (sunburst, tau, divisor) |
 | Frade (detalhe) | `/sobre-nos/fraternidade/[id]` | `frade` | schema já existia antes desta fase do projeto. Foto inteira, sem corte, e campo "Descer a foto" — ver "Frades: foto sem corte" |
 | Horário de Missas | `/missas` | `paginaMissas` | foto + 4 grupos de horário editáveis (Terça-Sexta, Sábado, Domingo, 1ª Quinta do Mês), cada um com array de horários + observação opcional. Usa `public/missas/vetor.png` (rosácea decorativa) |
-| Confissões | `/confissoes` | `paginaConfissoes` | 2 fotos editáveis (fundo esmaecido no topo + foto principal embaixo). Horários fixos no código (usuário só pediu Sanity pras fotos) |
+| Confissões | `/confissoes` | `paginaConfissoes` | 2 fotos editáveis (fundo esmaecido no topo + foto principal embaixo), **obrigatoriamente com transparência** — ver "Confissões: fotos do Gemini". Horários fixos no código (usuário só pediu Sanity pras fotos) |
 | Padroeiro do Santuário | `/padroeiro` | **não** | Ilustração da pomba (`public/padroeiro/santuario.png`) + véu degradê (`degrade branco.png`) que a dissolve no fundo, barra dourada (`retangulo separação.png`). Sem foto e sem texto variável, então não tem schema |
 | Programações das Pastorais e Movimentos | `/pastorais` | `pastoral` (lista) | Cards dourados (`public/pastorais/retangulo amarelo.png`) montados a partir da lista do Sanity, ordenados por `ordem`. Cada card = título + dia + horário + local (opcional). A lista rola sozinha se tiver mais cards do que cabe na tela; se ninguém cadastrou nada ainda, mostra o placeholder "Cadastre as pastorais no Sanity" (mesmo padrão das páginas de foto) |
 | Calendário de Eventos | `/eventos` | `evento` (lista) + `paginaEventos` (foto) | Lista de eventos (data + nome + horário), cada um um documento ordenado por `ordem`. A foto do rodapé (arco/cúpula, feita com `border-radius` elíptico `50% 50% 0 0 / 31% 31% 0 0`) é editável separadamente. Usa `public/eventos/evento vetor desenho.png` (igreja em traço claro atrás da lista) |
@@ -883,6 +884,66 @@ dobro na TV) entre o hábito e a borda. Medido na última linha do cabeçalho,
 embaixo do hábito: antes, 280 de 280 pixels na cor do fundo em quatro dos
 cinco frades (o Grassi já escondia com os 6%); depois, zero nos cinco. A foto
 desce ~4px no total, imperceptível no enquadramento.
+
+## Confissões: fotos do Gemini e texto pelo mockup (25/09/2026)
+
+O usuário passou as duas fotos da tela pelo Gemini para ganhar resolução e as
+enviou pelo Studio. Vieram **JPEG** (1632x2576 e 1920x2212): o esmaecido que
+era alfa virou **preto**, e a tela ficou com um borrão escuro atrás dos
+horários e uma faixa preta no meio.
+
+**Como foi resolvido** — mesmo princípio da Secretaria, com os originais do
+designer ainda no Sanity (`frei fundo.png` 1080x1706 e `Frei frente.png`
+1080x1244, ambos com alfa):
+
+- As versões do Gemini são **a mesma foto só ampliada**: registradas por
+  correlação de fase em ~200 recortes, o desvio é < 1px em qualquer ponto.
+  Basta redimensionar o PNG antigo para o tamanho novo.
+- **alfa** = o do PNG antigo, redimensionado.
+- **cor** = JPEG ÷ β, onde β é o escurecimento que o Gemini pintou. β não é
+  igual ao alfa (em alfa 0,3 o JPEG está ~55–70% claro), então foi medido na
+  própria imagem como curva β = f(alfa), mais uma correção local suave. Onde
+  β < 0,3 (alfa quase zero) a cor vem do PNG antigo.
+- **O Gemini inventou coisa no topo do fundo**: um brasão episcopal e um
+  montante de janela logo ao lado do título, e apagou as duas rosetas
+  decorativas. Ali (área lavada atrás do texto) a cor voltou a ser a do
+  arquivo antigo. Também "limpou" os fios de cabelo claros na borda do
+  recorte da cabeça do frei e pôs parede escura no lugar, que aparecia como
+  mancha cinza; perto da borda, onde o novo ficou bem mais escuro que o
+  antigo, volta a cor antiga.
+- Enviado ao Sanity como WebP com alfa (`confissoes fundo.webp`,
+  `confissoes frente.webp`). As referências anteriores (Gemini e designer)
+  estão anotadas caso precise voltar.
+
+**Pegadinhas do CDN do Sanity** descobertas no caminho:
+
+- JPEG sem parâmetro vem **recomprimido em q=80** (o fundo de 1,8MB chegou
+  com 189KB). Para trabalhar com o original sem perda, peça `?fm=png`.
+- WebP sem parâmetro vem **convertido em PNG** (5,6MB cada foto). Por isso
+  `getPaginaConfissoes` acrescenta `?auto=format&q=90`: o Chrome recebe WebP
+  com alfa, ~1MB.
+
+**O texto também foi recalibrado**, medido 1:1 no mockup de 1080x1920 (o
+`24635 - Confissões` que está no carrossel do `configTotem`):
+
+- "Terça à Sexta-feira" **Bold** e horários + "por ordem de chegada" em
+  **Poppins Medium** (não Bold, que era o código, nem Regular: a densidade
+  do traço bate com Medium, 0,283 contra 0,281 do mockup), todos a 5,5vw.
+- Cor do texto **#573A27** (medida no mockup; antes #241C14, bem mais
+  escuro). "A paz começa em…" em **#951E3B**, 4,31vw, entrelinha 1,15.
+- Saiu o ícone SVG ao lado do título: o enfeite do mockup é a roseta que já
+  vem na foto de fundo, e o SVG ficava em cima dela e empurrava o título
+  10px para a esquerda.
+- Resultado: as 9 linhas de texto a no máximo 2px do mockup, em x e y.
+- Botões em `bottom-[5.85vh]` (centro em 1743, mockup 1742). **Diferença que
+  ficou**: no mockup os botões são ~8% maiores e mais para dentro — é
+  geometria do `NavVoltarInicio` compartilhado (mesma decisão de Nossa
+  História).
+
+**Se vier foto nova para esta tela**: tem que ser PNG ou WebP **com
+transparência**. Se o Gemini for usado de novo, ele vai devolver JPEG — dá
+para repetir o processo acima, mas o certo é pedir ao designer o arquivo
+em alta já com alfa.
 
 ## Menu Inicial: logo no código, não no Sanity (25/09/2026)
 
