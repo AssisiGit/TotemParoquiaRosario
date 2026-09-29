@@ -51,9 +51,11 @@ O desenvolvimento segue sempre o mesmo fluxo, uma tela do totem de cada vez:
    1080x1920, comparar lado a lado com o design original, ajustar até bater
    bem (posições, proporções, tamanhos de fonte via `clamp()`), **só depois
    portar os valores já validados para os arquivos reais** do projeto
-   (`.tsx` do schema/página). Depois disso, rodar `npx tsc --noEmit` e
-   `npx eslint <arquivos>` para garantir build limpo, e mandar a prévia
-   renderizada para o usuário conferir.
+   (`.tsx` do schema/página). Depois disso, rodar `npx tsc --noEmit`,
+   `npx eslint <arquivos>` **e `npm run build`** para garantir build limpo, e
+   mandar a prévia renderizada para o usuário conferir. O `npm run build` não
+   é opcional: em 29/09/2026 um import quebrado passou no `tsc` e no `eslint`
+   e só o build da Vercel acusou (ver "Tela de Eventos no carrossel").
    - Esse fluxo de prévia usa Playwright, que **não é dependência do
      projeto** (não polua o `package.json` do totem com isso). Se for
      repetir esse processo aqui, instale o Playwright à parte, numa pasta
@@ -816,6 +818,14 @@ Foi inserido pela CLI logo depois do slide de Confissões. **O código
 publicado antes dessa mudança já ignorava o item** (o `filter(Boolean)` nas
 URLs descartava o `null`), então cadastrar antes do deploy não quebrou nada.
 O Studio antigo, porém, mostra o item como tipo desconhecido até o deploy.
+
+**O deploy falhou na primeira vez** por causa do ícone do item no Studio:
+no `@sanity/icons` 5 os ícones **não saem mais da importação principal**
+(`import { CalendarIcon } from '@sanity/icons'` quebra o build com "Export
+CalendarIcon doesn't exist"). O certo é o subcaminho:
+`import { CalendarIcon } from '@sanity/icons/Calendar'`. O `tsc` **não**
+acusa, porque os tipos da raiz declaram o ícone como `never`, que encaixa em
+qualquer lugar. Só o `npm run build` pega.
 
 Missas e Confissões continuam como **imagens dos mockups**. Se os horários
 mudarem no Sanity, essas imagens ficam desatualizadas. Dá para virarem telas

@@ -1,5 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
-import { CalendarIcon } from '@sanity/icons';
+import { CalendarIcon } from '@sanity/icons/Calendar';
 
 export default defineType({
   name: 'configTotem',
