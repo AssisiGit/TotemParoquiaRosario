@@ -368,7 +368,7 @@ Todas as páginas abaixo seguem o fluxo descrito acima (design pixel-a-perfeito
 | Confissões | `/confissoes` | `paginaConfissoes` | 2 fotos editáveis (fundo esmaecido no topo + foto principal embaixo), **obrigatoriamente com transparência** — ver "Confissões: fotos do Gemini". Horários fixos no código (usuário só pediu Sanity pras fotos) |
 | Padroeiro do Santuário | `/padroeiro` | **não** | Ilustração da pomba (`public/padroeiro/santuario.png`) + véu degradê (`degrade branco.png`) que a dissolve no fundo, barra dourada (`retangulo separação.png`). Sem foto e sem texto variável, então não tem schema |
 | Programações das Pastorais e Movimentos | `/pastorais` | `pastoral` (lista) | Cards dourados (`public/pastorais/retangulo amarelo.png`) montados a partir da lista do Sanity, ordenados por `ordem`. Cada card = título + dia + horário + local (opcional). A lista rola sozinha se tiver mais cards do que cabe na tela; se ninguém cadastrou nada ainda, mostra o placeholder "Cadastre as pastorais no Sanity" (mesmo padrão das páginas de foto) |
-| Calendário de Eventos | `/eventos` | `evento` (lista) + `paginaEventos` (foto) | Lista de eventos (data + nome + horário), cada um um documento ordenado por `ordem`. A foto do rodapé (arco/cúpula, feita com `border-radius` elíptico `50% 50% 0 0 / 31% 31% 0 0`) é editável separadamente. Usa `public/eventos/evento vetor desenho.png` (igreja em traço claro atrás da lista) |
+| Calendário de Eventos | `/eventos` | `evento` (lista) + `paginaEventos` (foto) | Lista de eventos (data + nome + horário), cada um um documento ordenado por `ordem`. A foto do rodapé (arco/cúpula, feita com `border-radius` elíptico `50% 50% 0 0 / 31% 31% 0 0`) é editável separadamente. Usa `public/eventos/evento vetor desenho.png` (igreja em traço claro atrás da lista). O desenho está em `app/_components/TelaEventos.tsx`, que também é slide do carrossel (ver "Tela de Eventos no carrossel") |
 | Avisos | `/avisos` | `aviso` (lista) | Cartões bege (`public/avisos/Retângulo bege.png`) montados da lista do Sanity. O cartão **cresce conforme o texto** (min-height + padding, retângulo esticado com `object-fill`), então avisos longos não são cortados. Cada aviso tem um campo de **imagem opcional** (pensado para QR Code de inscrição): quando preenchido, o cartão vira duas colunas — texto alinhado à esquerda (`flex-1`) + o anexo num quadrado branco de 26% da largura (o branco garante a leitura do QR mesmo se a imagem não tiver margem); sem imagem, o texto continua centralizado como antes. Usa `Icon Avisos.png` e `vetor divino espirito.png` (fundo em traço claro) |
 | Dízimo | `/dizimo` | `paginaDizimo` (QR Code) | "Seja um dizimista". Coração, TAU, título e frase do rodapé são fixos no código. Só o QR Code é editável — e é **opcional**: enquanto o campo estiver vazio vale o `public/dizimo/qr code.png`. A moldura vermelha/bege vem do próprio recorte; o QR do Sanity é sobreposto na área branca interna, então a secretaria envia só o quadrado do código |
 | Secretaria | `/secretaria` | `paginaSecretaria` | Horários (array de objetos dias+horario), telefones (array de string) e WhatsApp (texto + número) todos editáveis. A foto é **opcional** — vazia, vale `public/secretaria/foto transparente.webp` (ver "Secretaria: o preto do JPEG"). A foto fica à direita, dissolvida no fundo com `mask-image` (gradiente pela esquerda + por baixo, `mask-composite: intersect`). Fundo desta tela e da de Dízimo é `#F7F5EB`, não o `#FDFBF7` das outras |
@@ -773,10 +773,53 @@ pede ao CDN do Sanity a versão dimensionada, e não o arquivo original:
 
 ### Atenção ao testar
 
-Hoje há **1 imagem só** cadastrada no carrossel. Com menos de 2 imagens o
-`setInterval` nem chega a ser criado (`if (imagens.length < 2) return`), ou
-seja, o carrossel mostra uma foto parada e o tempo de 20s não tem efeito
-visível. Para ver a troca acontecendo é preciso cadastrar pelo menos duas.
+Com menos de 2 slides o `setInterval` nem chega a ser criado
+(`if (slides.length < 2) return`), ou seja, o carrossel mostra um slide parado
+e o tempo de 20s não tem efeito visível. (Em 29/09/2026 eram 6 itens.)
+
+Para não esperar minutos até um slide do meio aparecer: pelo CDP,
+`Page.addScriptToEvaluateOnNewDocument` com um `setTimeout`/`setInterval`
+que divide por 5 os atrasos de 1s ou mais. Os 20s de inatividade viram 4s e
+cada slide 4s; o fade (CSS) continua 1s. Foi assim que o slide de Eventos
+foi conferido.
+
+### Tela de Eventos no carrossel (29/09/2026)
+
+O usuário vinha colocando **telas do totem como imagens** no carrossel: os
+mockups de Missas e Confissões, recortados na altura dos botões (1080x1661 e
+1080x1645), para aparecerem só com a casinha piscando. Pediu o mesmo para
+Eventos.
+
+Eventos não entrou como imagem: a lista muda sempre, e a imagem ficaria
+velha. O carrossel agora aceita **dois tipos de item** no array
+`carrosselInatividade` do `configTotem`:
+
+- `image`: como sempre;
+- `telaEventos`: um objeto sem campo visível (o Sanity exige um campo, então
+  há um `semCampos` escondido). No Studio aparece em "Adicionar item" →
+  "Tela de Eventos (Calendário)" e pode ser arrastado para qualquer posição,
+  como as imagens.
+
+Como funciona:
+
+- A tela virou o componente `app/_components/TelaEventos.tsx`, sem busca de
+  dados. A página `/eventos` busca os dados e passa a barra Voltar/Início como
+  `children`; o carrossel a usa sem `children`. Conferido: `/eventos` saiu
+  idêntica à publicada (só difere o selo "N" do modo dev).
+- `getConfigTotem` devolve `carrossel: SlideCarrossel[]` (antes
+  `carrosselUrls`). Só busca eventos e foto se houver um item `telaEventos`,
+  e **pula o slide se não houver evento cadastrado**.
+- No carrossel, o slide de Eventos fica numa `div` com `isolate`, para os
+  `z-index` de dentro da tela não disputarem com a casinha.
+
+Foi inserido pela CLI logo depois do slide de Confissões. **O código
+publicado antes dessa mudança já ignorava o item** (o `filter(Boolean)` nas
+URLs descartava o `null`), então cadastrar antes do deploy não quebrou nada.
+O Studio antigo, porém, mostra o item como tipo desconhecido até o deploy.
+
+Missas e Confissões continuam como **imagens dos mockups**. Se os horários
+mudarem no Sanity, essas imagens ficam desatualizadas. Dá para virarem telas
+ao vivo pelo mesmo caminho: um componente de tela e mais um tipo de item.
 
 ## A armadilha do `/` sem `?ativo=true` (22/09/2026)
 

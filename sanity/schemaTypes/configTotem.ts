@@ -1,4 +1,5 @@
-import { defineType, defineField } from 'sanity';
+import { defineType, defineField, defineArrayMember } from 'sanity';
+import { CalendarIcon } from '@sanity/icons';
 
 export default defineType({
   name: 'configTotem',
@@ -34,9 +35,29 @@ export default defineType({
     defineField({
       name: 'carrosselInatividade',
       title: 'Carrossel de Inatividade',
-      description: 'Imagens exibidas em rotação quando o totem fica 20 segundos sem receber toque. Cada imagem fica 20 segundos na tela. Pode adicionar quantas quiser, sem limite. Arraste para reordenar. Se nenhuma imagem for adicionada, o totem mostra apenas a tela "Toque para Iniciar".',
+      description: 'Imagens exibidas em rotação quando o totem fica 20 segundos sem receber toque. Cada imagem fica 20 segundos na tela. Pode adicionar quantas quiser, sem limite. Arraste para reordenar. Para mostrar a lista de eventos (sempre atualizada, sem os botões Voltar/Início), use "Adicionar item" → "Tela de Eventos (Calendário)"; se não houver evento cadastrado, essa tela é pulada. Se nenhuma imagem for adicionada, o totem mostra apenas a tela "Toque para Iniciar".',
       type: 'array',
-      of: [{ type: 'image', options: { hotspot: true } }],
+      of: [
+        defineArrayMember({ type: 'image', options: { hotspot: true } }),
+        // A tela de Eventos ao vivo como slide (ver TelaEventos). Não tem nada
+        // para preencher: mostra a lista de "Eventos (Calendário)" e a foto de
+        // "Eventos (Foto)". O Sanity exige ao menos um campo num objeto, por
+        // isso este existe e fica escondido.
+        defineArrayMember({
+          type: 'object',
+          name: 'telaEventos',
+          title: 'Tela de Eventos (Calendário)',
+          icon: CalendarIcon,
+          fields: [defineField({ name: 'semCampos', type: 'boolean', hidden: true })],
+          preview: {
+            select: {},
+            prepare: () => ({
+              title: 'Tela de Eventos (Calendário)',
+              subtitle: 'A lista de eventos cadastrada, sempre atualizada',
+            }),
+          },
+        }),
+      ],
     }),
   ],
 });

@@ -2,6 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { SlideCarrossel } from '@/sanity/lib/getConfigTotem';
+import TelaEventos from './TelaEventos';
 
 // Quanto tempo sem toque até o totem sair da tela atual.
 // Vale para o Menu Inicial e para todas as páginas internas (ver ProtetorDeTela).
@@ -15,36 +17,40 @@ export const DURACAO_SLIDE_MS = 20000;
 // casinha aqui ter exatamente o mesmo tamanho que a das outras telas.
 const ALTURA_BOTAO = 'clamp(3.1rem, 12.5vw, 8.6rem)';
 
-// Carrossel de imagens exibido quando o totem fica 20s sem receber toque.
-// Recebe as URLs cadastradas no Sanity (campo "carrosselInatividade" em
-// configTotem) — sem limite de quantidade: o carrossel passa quantas a
-// secretaria cadastrar.
-export default function CarrosselInatividade({ imagens }: { imagens: string[] }) {
+// Carrossel exibido quando o totem fica 20s sem receber toque. Recebe os
+// slides cadastrados no Sanity (campo "carrosselInatividade" em configTotem),
+// sem limite de quantidade. Cada slide é uma imagem ou a tela de Eventos ao
+// vivo (TelaEventos, sem os botões Voltar/Início).
+export default function CarrosselInatividade({ slides }: { slides: SlideCarrossel[] }) {
   // O componente só é montado enquanto o carrossel está visível (tanto em
   // TotemClient quanto em ProtetorDeTela), então o índice já nasce em 0 a cada
   // vez que ele aparece — sem precisar de efeito para "resetar".
   const [indice, setIndice] = useState(0);
 
   useEffect(() => {
-    if (imagens.length < 2) return;
+    if (slides.length < 2) return;
     const intervalo = setInterval(() => {
-      setIndice((i) => (i + 1) % imagens.length);
+      setIndice((i) => (i + 1) % slides.length);
     }, DURACAO_SLIDE_MS);
     return () => clearInterval(intervalo);
-  }, [imagens.length]);
+  }, [slides.length]);
 
   return (
     <div className="relative w-full h-full">
-      {imagens.map((url, i) => (
-        <img
-          key={url + i}
-          src={url}
-          alt=""
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            i === indice ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-      ))}
+      {slides.map((slide, i) => {
+        const camada = `absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+          i === indice ? 'opacity-100' : 'opacity-0'
+        }`;
+        return slide.tipo === 'imagem' ? (
+          <img key={slide.chave} src={slide.url} alt="" className={`${camada} object-cover`} />
+        ) : (
+          // `isolate`: os z-index de dentro da tela de Eventos ficam presos
+          // nela e não disputam com a casinha nem com os outros slides.
+          <div key={slide.chave} className={`${camada} isolate`}>
+            <TelaEventos eventos={slide.eventos} fotoUrl={slide.fotoUrl} />
+          </div>
+        );
+      })}
 
       {/* Indicação de toque: a mesma casinha dos botões "Início" das telas
           internas, no rodapé, para a pessoa entender que basta tocar para

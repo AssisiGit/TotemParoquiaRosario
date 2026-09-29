@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import CarrosselInatividade, { TEMPO_INATIVIDADE_MS } from './CarrosselInatividade';
+import type { SlideCarrossel } from '@/sanity/lib/getConfigTotem';
 
 // Protetor de tela do totem, montado no layout — ou seja, vale em TODAS as
 // páginas internas (Missas, Avisos, Sobre Nós, ...). Se o visitante sair do
@@ -21,7 +22,7 @@ import CarrosselInatividade, { TEMPO_INATIVIDADE_MS } from './CarrosselInativida
 //                 um cadastro;
 //  - "/diagnostico" → ferramenta de instalação, some sozinha se o protetor
 //                 entrar no meio da leitura dos números.
-export default function ProtetorDeTela({ imagens }: { imagens: string[] }) {
+export default function ProtetorDeTela({ slides }: { slides: SlideCarrossel[] }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -32,7 +33,7 @@ export default function ProtetorDeTela({ imagens }: { imagens: string[] }) {
 
   const ativo =
     pathname !== '/' && !pathname.startsWith('/studio') && pathname !== '/diagnostico';
-  const temCarrossel = imagens.length > 0;
+  const temCarrossel = slides.length > 0;
 
   useEffect(() => {
     const mostrar = (visivel: boolean) => {
@@ -49,7 +50,7 @@ export default function ProtetorDeTela({ imagens }: { imagens: string[] }) {
     const iniciarTimer = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        // Sem imagens cadastradas no Sanity não há o que passar: nesse caso o
+        // Sem slides cadastrados no Sanity não há o que passar: nesse caso o
         // totem volta direto para a tela inicial.
         if (temCarrossel) mostrar(true);
         else router.push('/');
@@ -102,7 +103,7 @@ export default function ProtetorDeTela({ imagens }: { imagens: string[] }) {
     >
       {/* Só montamos o carrossel enquanto ele está de fato visível: assim ele
           sempre reinicia do slide 1. */}
-      {mostrando && temCarrossel && <CarrosselInatividade imagens={imagens} />}
+      {mostrando && temCarrossel && <CarrosselInatividade slides={slides} />}
     </div>
   );
 }

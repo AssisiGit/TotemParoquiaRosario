@@ -31,10 +31,10 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
   const searchParams = useSearchParams();
   const veioDoInicio = searchParams.get('ativo') === 'true';
 
-  const carrosselUrls = config?.carrosselUrls ?? [];
-  const temCarrossel = carrosselUrls.length > 0;
+  const slidesCarrossel = config?.carrossel ?? [];
+  const temCarrossel = slidesCarrossel.length > 0;
 
-  // 'menu' (interativo) -> 20s sem toque -> 'carrossel' (se houver imagens) ou 'repouso'
+  // 'menu' (interativo) -> 20s sem toque -> 'carrossel' (se houver slides) ou 'repouso'
   // 'carrossel' -> toque -> 'repouso' (Toque para Iniciar)
   // 'repouso' -> toque -> 'menu'
   const [tela, setTela] = useState<Tela>(veioDoInicio ? 'menu' : 'repouso');
@@ -228,14 +228,14 @@ export default function TotemClient({ menuItens, config }: { menuItens: MenuItem
         </div>
       </div>
 
-      {/* TELA 1B: CARROSSEL DE INATIVIDADE (aparece antes do "Toque para Iniciar", só se houver imagens no Sanity) */}
+      {/* TELA 1B: CARROSSEL DE INATIVIDADE (aparece antes do "Toque para Iniciar", só se houver slides no Sanity) */}
       <div
         className={`absolute inset-0 z-40 bg-black transition-opacity duration-700 cursor-pointer ${
           tela === 'carrossel' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Só montamos o carrossel quando ele está de fato visível: assim ele sempre reinicia do slide 1 */}
-        {tela === 'carrossel' && temCarrossel && <CarrosselInatividade imagens={carrosselUrls} />}
+        {tela === 'carrossel' && temCarrossel && <CarrosselInatividade slides={slidesCarrossel} />}
       </div>
 
       {/* TELA 2: MENU INICIAL (INTERATIVO) */}
